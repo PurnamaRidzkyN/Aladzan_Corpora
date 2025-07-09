@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Detail Produk | ResellerShop</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+    <link href="/css/style.css" rel="stylesheet" />
+  </head>
+  <body class="bg-gradient-to-b from-gray-50 to-white min-h-screen font-sans">
+
+    <!-- Navbar -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <a href="/" class="text-xl font-bold text-blue-600">
+          Reseller<span class="text-gray-800">Shop</span>
+        </a>
+        <a href="/keranjang" class="relative text-gray-700 hover:text-blue-600 text-xl">
+          🛒
+          <span class="absolute -top-1 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">2</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Main Produk -->
+    <main class="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-10 mt-10">
+      <!-- Gambar -->
+      <div>
+        <img
+          src="https://via.placeholder.com/600x400.png?text=Produk+Utama"
+          alt="Nama Produk"
+          class="w-full h-auto object-cover rounded-2xl shadow"
+        />
+
+        <div class="mt-4 flex gap-4 items-center">
+          <a href="https://via.placeholder.com/600x400.png?text=Produk+Utama" download class="bg-gray-200 text-sm px-4 py-2 rounded-xl hover:bg-gray-300">
+            <i class="fa-solid fa-download mr-1"></i> Unduh Gambar
+          </a>
+          <div class="flex gap-3">
+            <a href="https://wa.me/628123456789" target="_blank" class="text-green-500 text-xl hover:scale-110"><i class="fab fa-whatsapp"></i></a>
+            <a href="https://facebook.com/" target="_blank" class="text-blue-600 text-xl hover:scale-110"><i class="fab fa-facebook"></i></a>
+            <a href="https://instagram.com/" target="_blank" class="text-pink-500 text-xl hover:scale-110"><i class="fab fa-instagram"></i></a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Info Produk -->
+      <div class="flex flex-col gap-4">
+        <div class="text-sm text-gray-500 flex items-center justify-between mb-2">
+          <div>
+            <span class="text-gray-400">Kategori:</span>
+            <a href="#" class="text-blue-600 hover:underline ml-1">Skincare</a>
+          </div>
+          <a href="/toko/store-a" class="flex items-center gap-2 hover:bg-gray-100 px-3 py-1 rounded-lg transition">
+            <img src="https://via.placeholder.com/40x40.png?text=Logo" class="w-8 h-8 rounded-full object-cover border" />
+            <div>
+              <p class="text-sm font-semibold text-gray-800 leading-4">Store A</p>
+              <p class="text-xs text-gray-500">Lihat toko</p>
+            </div>
+          </a>
+        </div>
+
+        <h1 class="text-2xl font-bold text-gray-800">Nama Produk</h1>
+        <div class="flex items-center text-sm text-yellow-400">
+          ★★★★☆ <span class="text-gray-600 ml-2">(4.5 dari 120 ulasan)</span>
+        </div>
+        <p class="text-2xl text-blue-600 font-bold">Rp 25.000</p>
+
+        <div class="text-sm text-gray-500">
+          Stok: <span class="font-semibold text-gray-700">23 pcs</span> |
+          Terjual: <span class="font-semibold text-green-600">198</span>
+        </div>
+
+        <!-- Tombol Aksi -->
+        <div class="flex gap-3">
+          <button class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-3 rounded-xl">Tambah ke Keranjang</button>
+          <button class="w-1/2 bg-green-600 hover:bg-green-700 text-white text-sm px-4 py-3 rounded-xl">Beli Sekarang</button>
+        </div>
+
+        <!-- Tombol Simpan -->
+        <form action="/favorit/tambah" method="POST">
+          @csrf
+          <input type="hidden" name="produk_id" value="1">
+          <button class="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-6 py-2 rounded-xl w-full flex items-center justify-center gap-2">
+            <i class="fa-regular fa-heart"></i> Simpan Produk Ini
+          </button>
+        </form>
+      </div>
+    </main>
+
+    <!-- Deskripsi -->
+    <section class="max-w-6xl mx-auto px-6 mt-12">
+      <h2 class="text-lg font-semibold text-gray-800 mb-2">Deskripsi Produk</h2>
+      <p class="text-gray-600 text-sm leading-relaxed">
+        Ini adalah deskripsi lengkap dari produk. Jelaskan manfaat, bahan, ukuran, cara pakai, atau info lainnya dengan lengkap dan menarik.
+      </p>
+    </section>
+
+    <!-- Ulasan -->
+    <section class="max-w-6xl mx-auto px-6 mt-12 bg-gray-50 rounded-xl p-6 border border-gray-200">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Ulasan Pembeli</h2>
+      <div class="space-y-6">
+        <div class="bg-white p-5 rounded-xl shadow-sm border">
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <div class="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-sm font-bold text-blue-800">AK</div>
+              <span class="font-semibold text-gray-800 text-sm">Ari Kusuma</span>
+            </div>
+            <div class="text-yellow-400 text-sm">★★★★☆</div>
+          </div>
+          <p class="text-gray-700 text-sm leading-relaxed">
+            Produknya sesuai, kualitas bagus dan pengiriman cepat. Recommended banget buat reseller.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Produk Serupa -->
+    <section class="max-w-6xl mx-auto px-6 mt-12">
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Produk Serupa</h2>
+      <div class="overflow-x-auto scrollbar-hide">
+        <div class="flex gap-5">
+          @for($i = 1; $i <= 3; $i++)
+          <div class="min-w-[220px] bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-gray-200">
+            <img src="https://via.placeholder.com/200x150.png?text=Produk+{{$i}}" class="rounded-lg mb-3 w-full h-32 object-cover" />
+            <h3 class="text-sm font-semibold text-gray-800 line-clamp-2">
+              Produk {{$i}} - Nama Produk
+            </h3>
+            <div class="text-sm text-yellow-400 mt-1">★★★★☆ <span class="text-gray-500 text-xs">(4.{{$i}})</span></div>
+            <div class="text-xs text-gray-500 mb-1">Toko: <span class="text-gray-700 font-medium">Toko {{$i}}</span></div>
+            <p class="text-sm text-blue-600 font-bold">Rp {{ 20000 + $i * 1000 }}</p>
+            <a href="/produk/{{$i}}" class="mt-2 w-full block bg-blue-600 text-white text-xs py-1.5 text-center rounded-md hover:bg-blue-700">
+              Lihat Produk
+            </a>
+          </div>
+          @endfor
+        </div>
+      </div>
+    </section>
+
+  </body>
+</html>
