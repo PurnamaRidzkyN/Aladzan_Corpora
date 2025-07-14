@@ -21,7 +21,10 @@ class CreateUsersAndAuthTokensTable extends Migration
         Schema::create('resellers', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('google_id')->nullable()->unique();
             $table->string('email')->unique();
+            $table->string('phone')->unique();
+            $table->string('pfp_path');
             $table->string('password');
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();

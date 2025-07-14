@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" data-theme="light">
 
 <head>
     <meta charset="UTF-8" />
@@ -17,7 +17,7 @@
     <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
         <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Login ke ResellerShop</h2>
 
-        <form action="{{ route('login.post') }}" method="POST" class="space-y-4">
+        <form action="{{ route('login.reseller.post') }}" method="POST" class="space-y-4">
             @csrf
             @if ($errors->any())
                 <div class="mb-4 text-sm text-red-600">
@@ -46,7 +46,9 @@
                 <label class="flex items-center">
                     <input type="checkbox" name="remember" class="mr-2"> Ingat saya
                 </label>
-                <a href="" class="text-blue-600 hover:underline">Lupa kata sandi?</a>
+                <a href="{{ route('password.request', ['ir' => true]) }}" class="text-blue-600 hover:underline">
+                    Lupa kata sandi?
+                </a>
             </div>
 
             <button type="submit" class="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
@@ -62,7 +64,7 @@
         </div>
 
         <!-- Login Google -->
-        <a href=""
+        <a href="{{ route('google.login') }}"
             class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100">
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
             Login / Daftar dengan Gmail
@@ -70,7 +72,7 @@
 
         <!-- Daftar -->
         <p class="text-center text-sm mt-4 text-gray-600">
-            Belum punya akun? <a href="" class="text-blue-600 hover:underline">Daftar di sini</a>
+            Belum punya akun? <a href="{{ route('register') }}" class="text-blue-600 hover:underline">Daftar di sini</a>
         </p>
 
         <!-- Kembali -->

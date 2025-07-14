@@ -9,7 +9,7 @@ class Admin extends Authenticatable
     use Notifiable;
 
     protected $fillable = [
-        'gmail', 'password', 'is_super_admin',
+        'name','email', 'password', 'is_super_admin',
     ];
 
     protected $hidden = [

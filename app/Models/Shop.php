@@ -10,6 +10,6 @@ class Shop extends Model
 
     public function products()
     {
-        return $this->hasMany(Product::class, 'group_id');
+        return $this->hasMany(Product::class, 'shop_id');
     }
 }
