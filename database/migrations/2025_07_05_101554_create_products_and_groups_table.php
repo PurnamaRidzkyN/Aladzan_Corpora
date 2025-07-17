@@ -10,6 +10,7 @@ class CreateProductsAndGroupsTable extends Migration
         Schema::create('shops', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->timestamps();
         });
@@ -18,9 +19,9 @@ class CreateProductsAndGroupsTable extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->integer('price');
             $table->integer('sold')->default(0);
-           $table->foreignId('shop_id')->constrained('shops')->onDelete('cascade');
+            $table->foreignId('shop_id')->constrained('shops')->onDelete('cascade');
+            $table->string('slug')->unique();
             $table->timestamps();
         });
         Schema::create('ratings', function (Blueprint $table) {
@@ -34,15 +35,16 @@ class CreateProductsAndGroupsTable extends Migration
         Schema::create('product_media', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->string('file_path'); 
-            $table->string('file_type'); 
-            $table->string('original_name'); 
+            $table->string('file_path');
+            $table->string('file_type');
+            $table->string('original_name');
             $table->timestamps();
         });
 
         Schema::create('categories', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('slug')->unique();
             $table->timestamps();
         });
         Schema::create('category_product', function (Blueprint $table) {
@@ -51,13 +53,25 @@ class CreateProductsAndGroupsTable extends Migration
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
+         Schema::create('product_variants', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_id')->constrained()->onDelete('cascade');
+            $table->string('name'); 
+            $table->integer('price');
+            $table->foreignId('product_media_id')->nullable()->constrained('product_media')->onDelete('cascade');
+            $table->timestamps();
+        });
     }
 
     public function down()
     {
         Schema::dropIfExists('products');
-        Schema::dropIfExists('product_groups');
+        Schema::dropIfExists('category_products');
+        Schema::dropIfExists('shops');
+        Schema::dropIfExists('ratings');
+        Schema::dropIfExists('product_media');
         Schema::dropIfExists('categories');
-        Schema::dropIfExists('category_product');
+        Schema::dropIfExists('product_variants');
+
     }
 }

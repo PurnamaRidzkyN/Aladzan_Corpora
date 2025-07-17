@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Shop;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class ShopController extends Controller
 {
@@ -28,8 +27,7 @@ class ShopController extends Controller
         ]);
 
         $shop = Shop::create($request->all());
-        $folderName = 'S' . $shop->id;
-        Storage::disk('google')->makeDirectory($folderName);
+       
         return redirect()->route('shops.index')->with('success', 'Toko berhasil ditambahkan.');
     }
 
@@ -71,7 +69,6 @@ class ShopController extends Controller
     public function destroy(string $id)
     {
         $shop = Shop::findOrFail($id);
-        Storage::disk('google')->deleteDirectory('S'. $shop->id);
         $shop->delete();
 
         return redirect()->route('shops.index')->with('success', 'Toko berhasil dihapus.');

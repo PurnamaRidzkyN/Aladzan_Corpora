@@ -30,6 +30,33 @@
             <p class="text-sm font-medium">{{ session('success') }}</p>
         </div>
     @endif
+     <!-- Menampilkan Error Validation -->
+@if ($errors->any())
+    <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
+        class="fixed inset-x-0 top-10 mx-auto max-w-md 
+        rounded-lg shadow-md px-6 py-3 flex items-start gap-2
+        text-red-900
+        bg-gradient-to-r from-red-100 via-red-50 to-red-100"
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-2"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-2">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-600" fill="none"
+            viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        <div class="text-sm font-medium">
+            <ul class="list-disc list-inside">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    </div>
+@endif
+
     <!-- Sidebar tetap fixed -->
     <aside class="w-64 bg-white border-r border-gray-200 p-6 fixed inset-y-0 left-0 z-40">
         @include('layouts.sidebar_dashboard')

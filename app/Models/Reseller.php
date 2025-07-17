@@ -8,13 +8,9 @@ class Reseller extends Authenticatable
 {
     use Notifiable;
 
-    protected $fillable = [
-        'name', 'email', 'password','phone','pfp_path'
-    ];
+    protected $fillable = ['name', 'email', 'password', 'phone', 'pfp_path'];
 
-    protected $hidden = [
-        'password', 'remember_token',
-    ];
+    protected $hidden = ['password', 'remember_token'];
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
@@ -29,5 +25,13 @@ class Reseller extends Authenticatable
     public function ratings()
     {
         return $this->hasMany(Rating::class);
+    }
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+    public function cartItems()
+    {
+        return $this->hasMany(Cart::class);
     }
 }

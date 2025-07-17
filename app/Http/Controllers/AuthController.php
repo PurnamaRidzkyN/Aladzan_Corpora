@@ -59,7 +59,7 @@ class AuthController extends Controller
 
         if ($reseller && Hash::check($request->password, $reseller->password)) {
             Auth::guard('reseller')->login($reseller, $remember);
-            return redirect()->intended('/reseller/dashboard');
+            return redirect()->intended('/');
         }
 
         return back()->withErrors([
@@ -166,8 +166,11 @@ class AuthController extends Controller
         }
     }
 
-    public function redirectToGoogle()
+    public function redirectToGoogle(Request $request)
     {
+        if ($request->has('redirect')) {
+            session(['reseller_redirect_back' => $request->query('redirect')]);
+        }
         return Socialite::driver('google')->redirect();
     }
 
@@ -182,8 +185,8 @@ class AuthController extends Controller
 
         if ($user) {
             Auth::login($user);
-
-            return redirect('/home');
+            $redirectTo = session()->pull('reseller_redirect_back', '/');
+            return redirect($redirectTo);
         } else {
             $user = [
                 'name' => $googleUser->getName(),
@@ -214,15 +217,17 @@ class AuthController extends Controller
                 'email' => 'required|email|unique:resellers,email',
                 'phone' => 'required|string|max:15|unique:resellers,phone',
             ]);
-
+            $googleUser = session('google_user_data');
             // Ambil data tambahan dari session atau request
-            $pfp = $request->pfp_path ?? 'default.png';
+            $pfp = $googleUser['pfp_path'] ?? 'default.png';
+            $googleId = $googleUser['google_id'];
             $googleId = $request->google_id;
 
             $user = Reseller::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
+                'google_id' => $googleId,
                 'pfp_path' => $pfp,
                 'password' => $googleId,
                 // Tidak perlu password karena akun Google

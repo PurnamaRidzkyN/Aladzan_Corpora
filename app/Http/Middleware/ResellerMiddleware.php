@@ -21,6 +21,6 @@ class ResellerMiddleware
             return $next($request);
         }
 
-        return redirect('/login')->with('error', 'Akses hanya untuk reseller.');
+        return redirect()->route('login.reseller')->with('error', 'Akses hanya untuk reseller.');
     }
 }

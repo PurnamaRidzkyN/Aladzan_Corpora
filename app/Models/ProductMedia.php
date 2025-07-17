@@ -14,9 +14,11 @@ class ProductMedia extends Model
         'file_type',
         'original_name',
     ];
-
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+    public function variant(){
+        return $this->hasOne(ProductVariant::class);
     }
 }

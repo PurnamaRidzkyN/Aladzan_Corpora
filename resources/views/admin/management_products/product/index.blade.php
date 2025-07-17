@@ -9,22 +9,6 @@
     ];
 @endphp
 @section('content')
-@if (session('success'))
-        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
-            class="fixed inset-x-0 top-10 mx-auto max-w-md 
-           rounded-lg shadow-md px-6 py-3 flex items-center space-x-3
-           text-green-900
-           bg-gradient-to-r from-green-100 via-green-50 to-green-100"
-            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2"
-            x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200"
-            x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0 text-green-600" fill="none"
-                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-            <p class="text-sm font-medium">{{ session('success') }}</p>
-        </div>
-    @endif
     <section class="w-full lg:px-12 mt-8 space-y-6">
 
         <!-- Full Box: Toko -->
@@ -91,7 +75,9 @@
                                         <div class="flex justify-between items-center">
                                             <span class="font-medium" x-text="product.name"></span>
                                             <span class="text-sm text-gray-500"
-                                                x-text="'Rp' + Number(product.price).toLocaleString('id-ID')"></span>
+                                                x-html="`<i class='fas fa-star text-yellow-400 mr-1'></i> ${Number(product?.rating?.rating ?? 0).toFixed(1)}`">
+                                            </span>
+
                                         </div>
                                     </a>
                                 </li>
@@ -126,7 +112,9 @@
                             <div class="space-x-2">
                                 <button class="btn btn-gradient-warning btn-xs"
                                     @click="$store.productForm.openEdit(selected)">Edit</button>
-<label for="delete_product" class="btn btn-gradient-error btn-xs text-white" @click="confirmDelete(selected.id, selected.name)">Hapus</label>                            </div>
+                                <label for="delete_product" class="btn btn-gradient-error btn-xs text-white"
+                                    @click="confirmDelete(selected.id, selected.name)">Hapus</label>
+                            </div>
                         </div>
 
                         <!-- Gambar -->
@@ -135,28 +123,33 @@
                                 <template x-if="selected.media && selected.media.length">
                                     <template x-for="item in selected.media" :key="item.id">
                                         <div class="flex-shrink-0 w-32 h-32 relative">
-                                            <template x-if="item.file_type.startsWith('image/')">
-                                                <img :src="'https://drive.google.com/thumbnail?id=' + item.file_path + '&sz=w320'"
+                                            <!-- IMAGE -->
+                                            <template x-if="item.file_type.startsWith('image')">
+                                                <img :src="'https://res.cloudinary.com/dpujlyn9x/image/upload/' + item.file_path"
                                                     class="w-full h-full object-cover rounded-xl border cursor-pointer"
                                                     alt="Gambar Produk"
-                                                    @click="preview = 'https://drive.google.com/thumbnail?id=' + item.file_path + '&sz=w1024'; type = 'image'">
+                                                    @click="preview = 'https://res.cloudinary.com/dpujlyn9x/image/upload/' + item.file_path ; type = 'image'">
                                             </template>
-                                            <template x-if="item.file_type.startsWith('video/')">
+
+                                            <!-- VIDEO -->
+                                            <template x-if="item.file_type.startsWith('video')">
                                                 <div class="relative w-full h-full cursor-pointer"
-                                                    @click="preview = 'https://drive.google.com/uc?id=' + item.file_path; type = 'video'">
+                                                    @click="preview = 'https://res.cloudinary.com/dpujlyn9x/video/upload/' + item.file_path ; type = 'video'">
                                                     <video
                                                         class="w-full h-full object-cover rounded-xl border pointer-events-none">
-                                                        <source :src="'https://drive.google.com/uc?id=' + item.file_path"
+                                                        <source
+                                                            :src="'https://res.cloudinary.com/dpujlyn9x/video/upload/' + item
+                                                                .file_path"
                                                             :type="item.file_type">
                                                     </video>
                                                     <div
                                                         class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xl font-bold">
-                                                        ▶
-                                                    </div>
+                                                        ▶</div>
                                                 </div>
                                             </template>
                                         </div>
                                     </template>
+
                                 </template>
                                 <template x-if="!selected.media || selected.media.length === 0">
                                     <img src="https://placehold.co/150x100?text=No+Media"
@@ -191,13 +184,31 @@
                         <!-- Info -->
                         <div class="text-sm space-y-1 mb-4">
                             <p><strong>Nama:</strong> <span x-text="selected.name"></span></p>
-                            <p><strong>Kategori:</strong> <span x-text="selected.category?.name || '-'"></span></p>
-                            <p><strong>Harga:</strong> Rp<span
-                                    x-text="Number(selected.price).toLocaleString('id-ID')"></span></p>
-                            <p><strong>Penjualan:</strong> <span x-text="selected.sold || 0"></span> kali</p>
-                            <p><strong>Rating:</strong> ⭐ <span x-text="Number(selected.rating).toFixed(1)"></span> dari
-                                <span x-text="selected.reviews_count || 0"></span> ulasan
+                            <p><strong>Kategori:</strong>
+                                <span x-text="selected.categories?.map(c => c.name).join(', ') || '-'"></span>
                             </p>
+                            <template x-if="selected.variants && selected.variants.length">
+                                <div>
+                                    <p class="font-semibold text-sm mb-1">Varian & Harga:</p>
+                                    <ul class="text-sm list-disc list-inside">
+                                        <template x-for="variant in selected.variants" :key="variant.id">
+                                            <li>
+                                                <span x-text="variant.name"></span>: Rp
+                                                <span x-text="Number(variant.price).toLocaleString('id-ID')"></span>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </template>
+                            <p><strong>Penjualan:</strong> <span x-text="selected.sold || 0"></span> kali</p>
+                            <p>
+                                <strong>Rating:</strong>
+                                <i class="fas fa-star text-yellow-400"></i>
+                                <span x-text="Number(selected.rating?.rating || 0).toFixed(1)"></span>
+                                dari
+                                <span x-text="selected.rating?.rating_count || 0"></span> ulasan
+                            </p>
+
                         </div>
 
                         <!-- Deskripsi -->
@@ -226,10 +237,10 @@
                 x-text="$store.productForm.mode === 'edit' ? 'Edit Produk' : 'Tambah Produk'"></h3>
 
             <form x-on:submit="rebuildHiddenInputs()"
-                
                 :action="$store.productForm.mode === 'edit' ?
-                    ('/admin/products/' + $store.productForm.formData.id) :
-                    '/admin/shops/{{ $shop->id }}/products'"
+                    '{{ route('products.update', ['product' => '__ID__']) }}'.replace('__ID__', $store.productForm
+                        .formData.id) :
+                    '{{ route('shops.products.store', $shop->id) }}'"
                 method="POST" enctype="multipart/form-data" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 @csrf
 
@@ -244,9 +255,6 @@
                 <div class="space-y-4">
                     <input type="text" name="name" placeholder="Nama Produk" class="input input-bordered w-full"
                         x-model="$store.productForm.formData.name" required>
-
-                    <input type="number" name="price" placeholder="Harga (Rp)" class="input input-bordered w-full"
-                        x-model="$store.productForm.formData.price" required>
 
                     <!-- Kategori -->
                     <div>
@@ -275,25 +283,76 @@
                 </div>
 
                 <!-- Kolom Kanan -->
-                <div class="space-y-4">
+                <div class="space-y-6">
+
                     <!-- Media Produk -->
-                     <div class="space-y-2">
-        <div class="flex items-center justify-between">
-            <label class="font-semibold text-sm">Media Produk</label>
-            <label for="mediaInput" class="btn btn-sm btn-outline-primary">+ Pilih File</label>
-        </div>
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label class="font-semibold text-sm">Media Produk</label>
+                            <label for="mediaInput" class="btn btn-sm btn-outline-primary">+ Pilih File</label>
+                        </div>
 
-        <div id="realFileInputs">
-            <input id="mediaInput" type="file" class="hidden" multiple accept="image/*,video/*"
-                onchange="addFiles(event)">
-            <div id="hiddenInputsContainer"></div>
-        </div>
+                        <div id="realFileInputs">
+                            <input id="mediaInput" type="file" class="hidden" multiple accept="image/*,video/*"
+                                onchange="addFiles(event)">
+                            <div id="hiddenInputsContainer"></div>
+                        </div>
 
-        <p id="fileCount" class="text-xs text-gray-500">0 file dipilih</p>
-        <ul id="fileList"
-            class="grid grid-cols-2 gap-2 text-sm text-gray-800 max-h-48 overflow-y-auto pr-1">
-        </ul>
-    </div>
+                        <p id="fileCount" class="text-xs text-gray-500">0 file dipilih</p>
+                        <ul id="fileList"
+                            class="grid grid-cols-2 gap-2 text-sm text-gray-800 max-h-48 overflow-y-auto pr-1">
+                        </ul>
+                    </div>
+
+                    <!-- Variasi Produk -->
+                    <template x-for="(variant, index) in $store.productForm.formData.variants" :key="index">
+                        <div class="border rounded-xl p-4 bg-gray-50 space-y-3">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <!-- Nama & Harga -->
+                                <input type="text" :name="`variants[${index}][name]`" x-model="variant.name"
+                                    class="input input-bordered w-full" placeholder="Nama Varian" required>
+
+                                <input type="number" :name="`variants[${index}][price]`" x-model="variant.price"
+                                    class="input input-bordered w-full" placeholder="Harga Varian" required>
+                            </div>
+
+                            <!-- Pilih Gambar dari Media -->
+                            <select class="select select-bordered w-full max-w-xs text-sm"
+                                :name="`variants[${index}][media_id]`" x-model="variant.media_id">
+
+                                <!-- Ini hanya ditampilkan saat belum ada pilihan -->
+                                <option disabled value="">Pilih Gambar</option>
+
+                                <!-- Tampilkan yang sedang aktif saat edit -->
+                                <template x-if="$store.productForm.mode === 'edit' && variant.media_id">
+    <option :value="variant.media_id">
+        📌 Saat Ini:
+        <span
+            x-text="$store.productForm.mediaOptions.find(m => m.id == variant.media_id)?.name || 'Media tidak ditemukan'">
+        </span>
+    </option>
+</template>
+
+
+                                <!-- Daftar semua pilihan gambar/video -->
+                                <template x-for="media in $store.productForm.mediaOptions" :key="media.id">
+                                    <option :value="media.name" x-text="media.name"></option>
+                                </template>
+                            </select>
+
+
+                            <!-- Tombol Hapus -->
+                            <div class="text-right">
+                                <button type="button" @click="$store.productForm.formData.variants.splice(index, 1)"
+                                    class="btn btn-sm btn-error">Hapus</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Tombol Tambah Varian -->
+                    <button type="button"
+                        @click="$store.productForm.formData.variants.push({ name: '', price: '', media_id: null })"
+                        class="btn btn-sm btn-outline mt-2">+ Tambah Variasi</button>
                 </div>
 
                 <!-- Tombol Aksi -->
@@ -310,9 +369,10 @@
         document.addEventListener('alpine:init', () => {
             Alpine.store('productForm', {
                 mode: 'add',
+                mediaOptions: [],
                 formData: {
                     name: '',
-                    price: '',
+                    variants: [],
                     stock: '',
                     categories: [],
                     description: '',
@@ -322,12 +382,11 @@
                     this.mode = 'add';
                     this.formData = {
                         name: '',
-                        price: '',
+                        variants: [],
                         stock: '',
                         categories: [],
                         description: '',
                     };
-                    // Isi media lama
 
                     document.getElementById('modal_produk').checked = true;
                 },
@@ -337,11 +396,24 @@
                     this.formData = {
                         id: product.id,
                         name: product.name,
-                        price: product.price,
+                        variants: product.variants || [],
                         stock: product.stock,
                         categories: product.categories?.map(c => c.id) || [],
                         description: product.description || '',
                     };
+
+                    this.formData.variants = (product.variants || []).map(variant => ({
+                        ...variant,
+                        media_id: variant.product_media_id 
+                    }));
+
+
+                    this.mediaOptions = (product.media || []).map(media => ({
+                        id: media.id,
+                        name: media.original_name,
+                        type: media.file_type,
+                    }));
+
                     this.selected = {
                         ...product,
                         media: product.media || []
@@ -352,17 +424,21 @@
                     }));
                     window.deletedMediaIds = [];
                     window.selectedFiles = [];
+
+                   
+                    syncMediaOptions();
+
                     renderFileList();
                     rebuildHiddenInputs();
-
                     document.getElementById('modal_produk').checked = true;
                 },
 
                 resetForm() {
                     this.mode = 'add';
+                    this.mediaOptions = [];
                     this.formData = {
                         name: '',
-                        price: '',
+                        variants: [],
                         stock: '',
                         categories: [],
                         description: '',
@@ -375,22 +451,35 @@
     <script>
         let selectedFiles = [];
         let removedMedia = [];
-        window.existingMedia = []; // jangan lupa inisialisasi di luar
+        window.existingMedia = [];
         window.deletedMediaIds = [];
 
         function addFiles(event) {
             const inputFiles = Array.from(event.target.files);
             selectedFiles = selectedFiles.concat(inputFiles);
+
+            // Update mediaOptions
+            const startIndex = Date.now(); 
+            inputFiles.forEach((file, i) => {
+                Alpine.store('productForm').mediaOptions.push({
+                    id: `${startIndex}_${i}`,
+                    name: file.name,
+                    type: file.type,
+                    file: file, 
+                });
+            });
+            syncMediaOptions();
             renderFileList();
             rebuildHiddenInputs();
-
-            event.target.value = ''; // Reset agar bisa upload file yang sama lagi
+            event.target.value = '';
         }
+
 
         function removeFile(index) {
             selectedFiles.splice(index, 1);
             renderFileList();
             rebuildHiddenInputs();
+            syncMediaOptions();
         }
 
 
@@ -399,8 +488,9 @@
             if (removed && removed.id) {
                 window.deletedMediaIds.push(removed.id); // simpan ID-nya
             }
-            renderFileList(); // render ulang UI
-            rebuildHiddenInputs(); // rebuild input hidden agar data ikut ke backend
+            renderFileList();
+            rebuildHiddenInputs();
+            syncMediaOptions();
         }
 
 
@@ -421,20 +511,21 @@
 
                 const content = isVideo ?
                     `<video class="w-full h-24 object-cover" muted>
-                    <source src="https://drive.google.com/uc?id=${item.file_path}" type="${item.file_type}">
-               </video>` :
-                    `<img src="https://drive.google.com/thumbnail?id=${item.file_path}&sz=w320"
-                    class="w-full h-24 object-cover" alt="${item.original_name}">`;
+            <source src="https://res.cloudinary.com/dpujlyn9x/video/upload/${item.file_path}" type="video/${item.file_type}">
+       </video>` :
+                    `<img src="https://res.cloudinary.com/dpujlyn9x/image/upload/${item.file_path}"
+            class="w-full h-24 object-cover" alt="${item.original_name}">`;
+
 
                 li.innerHTML = `
             ${content}
-            <div class="absolute bottom-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 truncate">
-                ${isVideo ? '🎥' : '🖼️'} ${item.original_name}
-            </div>
-            <button type="button"
-                class="absolute top-1 right-1 bg-white text-red-600 text-xs px-2 py-1 rounded shadow hidden group-hover:block"
-                onclick="removeExistingMedia(${index})">✕</button>
-        `;
+                    <div class="absolute bottom-0 bg-black bg-opacity-50 text-white text-xs px-2 py-1 truncate">
+                        ${isVideo ? '🎥' : '🖼️'} ${item.original_name}
+                    </div>
+                    <button type="button"
+                        class="absolute top-1 right-1 bg-white text-red-600 text-xs px-2 py-1 rounded shadow hidden group-hover:block"
+                        onclick="removeExistingMedia(${index})">✕</button>
+                `;
 
                 listEl.appendChild(li);
             });
@@ -467,66 +558,103 @@
         }
 
 
-       function rebuildHiddenInputs() {
-    const container = document.getElementById('realFileInputs');
-    const hiddenInputsContainer = document.getElementById('hiddenInputsContainer');
-    hiddenInputsContainer.innerHTML = ''; // Clear sebelumnya
+        function rebuildHiddenInputs() {
+            const container = document.getElementById('realFileInputs');
+            const hiddenInputsContainer = document.getElementById('hiddenInputsContainer');
+            hiddenInputsContainer.innerHTML = '';
 
-    // Tambah file baru
-    selectedFiles.forEach((file) => {
-        const dataTransfer = new DataTransfer();
-        dataTransfer.items.add(file);
+            // Simpan semua media baru berdasarkan mediaOptions
+            (Alpine.store('productForm').mediaOptions || []).forEach((media) => {
+                if (!(media.file instanceof File)) return;
+                const dataTransfer = new DataTransfer();
+                dataTransfer.items.add(media.file);
 
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.name = 'media[]';
-        input.files = dataTransfer.files;
-        input.hidden = true;
-        hiddenInputsContainer.appendChild(input);
-    });
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.name = `media[${media.id}]`; 
+                input.files = dataTransfer.files;
+                input.hidden = true;
+                hiddenInputsContainer.appendChild(input);
+            });
 
-    // Tambah input deleted_media[]
-    (window.deletedMediaIds || []).forEach((id) => {
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = 'deleted_media[]';
-        input.value = id;
-        hiddenInputsContainer.appendChild(input);
-    });
-}
+            // Tambah input deleted_media[]
+            (window.deletedMediaIds || []).forEach((id) => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'deleted_media[]';
+                input.value = id;
+                hiddenInputsContainer.appendChild(input);
+            });
+        }
 
+        function syncMediaOptions() {
+            const store = Alpine.store('productForm');
+
+            // Ambil dari existingMedia + selectedFiles
+            const newOptions = [];
+
+            // Media lama (existing)
+            (window.existingMedia || []).forEach((item) => {
+                newOptions.push({
+                    id: item.id, 
+                    name: item.original_name,
+                    type: item.file_type,
+                });
+
+            });
+
+            // Media baru (selectedFiles)
+            (selectedFiles || []).forEach((file, i) => {
+                newOptions.push({
+                    id: file.lastModified + '_' + i,
+                    name: file.name,
+                    type: file.type,
+                    file: file
+                });
+            });
+
+            store.mediaOptions = newOptions;
+
+            // Hapus media_id di variant kalau sudah tidak ada di mediaOptions
+            const validIds = newOptions.map(m => m.id);
+            store.formData.variants.forEach(v => {
+                if (!validIds.includes(v.media_id)) {
+                    v.media_id = null;
+                }
+            });
+
+        }
     </script>
 
 
     <!-- MODAL HAPUS PRODUK -->
- <input type="checkbox" id="delete_product" class="modal-toggle" />
-<div class="modal">
-    <div class="modal-box">
-        <h3 class="font-bold text-lg">Konfirmasi Hapus</h3>
-        <p class="py-4">Yakin ingin menghapus produk <strong id="productNameToDelete">Produk</strong>?</p>
-        <div class="modal-action">
-            <form method="POST" id="deleteProductForm">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-gradient-error">Ya, Hapus</button>
-                <label for="delete_product" class="btn">Batal</label>
-            </form>
+    <input type="checkbox" id="delete_product" class="modal-toggle" />
+    <div class="modal">
+        <div class="modal-box">
+            <h3 class="font-bold text-lg">Konfirmasi Hapus</h3>
+            <p class="py-4">Yakin ingin menghapus produk <strong id="productNameToDelete">Produk</strong>?</p>
+            <div class="modal-action">
+                <form method="POST" id="deleteProductForm">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-gradient-error">Ya, Hapus</button>
+                    <label for="delete_product" class="btn">Batal</label>
+                </form>
+            </div>
         </div>
     </div>
-</div>
-<script>
-    function confirmDelete(id, name) {
-        document.getElementById('productNameToDelete').textContent = name;
+    <script>
+        function confirmDelete(id, name) {
+            document.getElementById('productNameToDelete').textContent = name;
 
-        // Ganti action form dengan route yang benar
-        const form = document.getElementById('deleteProductForm');
-        form.action = `{{ route('products.destroy', ':id') }}`.replace(':id', id);
-    }
-</script>
+            // Ganti action form dengan route yang benar
+            const form = document.getElementById('deleteProductForm');
+            form.action = `{{ route('products.destroy', ':id') }}`.replace(':id', id);
+        }
+    </script>
 
     <script>
         function produkFilter(products, categories) {
-            console.log(products);
             return {
                 products: products,
                 kategoriList: categories,
@@ -537,41 +665,37 @@
                     return this.products.filter(p => {
                         const cocokNama = p.name.toLowerCase().includes(this.search.toLowerCase());
 
-                        // ambil semua nama kategori dari produk ini, lowercase-kan
                         const kategoriProduk = (p.categories || []).map(c => c.name.toLowerCase());
 
-                        // jika tidak ada yang dicentang, semua cocok
                         const cocokKategori = this.selectedCategories.length === 0 ||
-                            kategoriProduk.some(kat => this.selectedCategories.map(c => c.toLowerCase())
-                                .includes(kat));
+                            this.selectedCategories.every(kat =>
+                                kategoriProduk.includes(kat.toLowerCase())
+                            );
 
                         return cocokNama && cocokKategori;
                     });
                 }
-
-
             }
         }
     </script>
-<input type="checkbox" id="modal_edit_toko" class="modal-toggle" {{ old('editing') ? 'checked' : '' }} />
-<div class="modal">
-    <div class="modal-box w-full max-w-md">
-        <h3 class="font-bold text-lg mb-2 text-primary">Edit Toko</h3>
-        <form action="{{ route('shops.update', $shop->id) }}" method="POST" class="space-y-4">
-            @csrf
-            @method('PUT')
+    <input type="checkbox" id="modal_edit_toko" class="modal-toggle" {{ old('editing') ? 'checked' : '' }} />
+    <div class="modal">
+        <div class="modal-box w-full max-w-md">
+            <h3 class="font-bold text-lg mb-2 text-primary">Edit Toko</h3>
+            <form action="{{ route('shops.update', $shop->id) }}" method="POST" class="space-y-4">
+                @csrf
+                @method('PUT')
 
-            <input type="text" name="name" value="{{ old('name', $shop->name) }}"
-                class="input input-bordered w-full" required>
-            <textarea name="description" rows="4"
-                class="textarea textarea-bordered w-full" required>{{ old('description', $shop->description) }}</textarea>
+                <input type="text" name="name" value="{{ old('name', $shop->name) }}"
+                    class="input input-bordered w-full" required>
+                <textarea name="description" rows="4" class="textarea textarea-bordered w-full" required>{{ old('description', $shop->description) }}</textarea>
 
-            <div class="modal-action">
-                <label for="modal_edit_toko" class="btn">Batal</label>
-                <button type="submit" class="btn btn-gradient-primary">Perbarui</button>
-            </div>
-        </form>
+                <div class="modal-action">
+                    <label for="modal_edit_toko" class="btn">Batal</label>
+                    <button type="submit" class="btn btn-gradient-primary">Perbarui</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
 @endsection

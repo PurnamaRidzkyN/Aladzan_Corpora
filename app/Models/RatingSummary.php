@@ -4,15 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Wishlist extends Model
+// app/Models/RatingSummary.php
+class RatingSummary extends Model
 {
+    protected $table = 'rating_summary_view';
     public $timestamps = false;
-
-    protected $fillable = ['reseller_id', 'product_id'];
-    public function reseller()
-    {
-        return $this->belongsTo(Reseller::class);
-    }
+    protected $guarded = [];
 
     public function product()
     {

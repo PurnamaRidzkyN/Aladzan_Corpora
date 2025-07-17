@@ -2,23 +2,25 @@
 
 namespace App\Http\Controllers;
 
+use Google_Client;
 use App\Models\Shop;
 use App\Models\Product;
 use App\Models\Category;
+use Google_Service_Drive;
+use Illuminate\Support\Str;
+
 use App\Models\ProductMedia;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-
-use Google_Client;
-use Google_Service_Drive;
 use Google_Service_Drive_Permission;
+use Illuminate\Support\Facades\Storage;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ProductController extends Controller
 {
     public function index($id)
     {
         $shop = Shop::findOrFail($id);
-        $products = Product::with('categories', 'media')->where('shop_id', $shop->id)->get();
+        $products = Product::with('categories', 'media', 'variants', 'rating')->where('shop_id', $shop->id)->get();
 
         $categories = Category::all();
         return view('admin.management_products.product.index', compact('shop', 'products', 'categories'));
@@ -29,14 +31,12 @@ class ProductController extends Controller
         // 1. Validasi
         $data = $request->validate([
             'name' => 'required|string',
-            'price' => 'required|numeric',
             'categories' => 'nullable|array',
             'description' => 'nullable|string',
             'shop_id' => 'required|exists:shops,id',
         ]);
 
         $product = Product::create($data);
-
         // 3. Simpan kategori jika ada (opsional tergantung relasi)
         if ($request->has('categories')) {
             $product->categories()->sync($request->categories);
@@ -44,40 +44,39 @@ class ProductController extends Controller
 
         // 4. Simpan File
         $folderName = 'S' . $data['shop_id'] . '/P' . $product->id;
-        Storage::disk('google')->makeDirectory($folderName);
+
         if ($request->hasFile('media')) {
+            $mediaMap = [];
+
             foreach ($request->file('media') as $file) {
-                $filename = $folderName . '/' . uniqid() . '_' . $file->getClientOriginalName();
+                $type = Str::startsWith($file->getMimeType(), 'video') ? 'video' : 'image';
 
-                // ⬇️ Simpan ke Google Drive
-                $path = Storage::disk('google')->putFileAs('', $file, $filename);
+                $uploaded = Cloudinary::uploadApi()->upload($file->getRealPath(), [
+                    'folder' => $folderName,
+                    'resource_type' => $type,
+                ]);
 
-                // Ambil ID file dari metadata
-                $adapter = Storage::disk('google')->getAdapter();
-                $metadata = $adapter->getMetadata($path);
-                $fileId = $metadata['extraMetadata']['id'] ?? null;
-
-                // ✅ Buat file Google Drive menjadi PUBLIC
-                if ($fileId) {
-                    $client = new Google_Client();
-                    $client->setClientId(config('filesystems.disks.google.client_id'));
-                    $client->setClientSecret(config('filesystems.disks.google.client_secret'));
-                    $client->refreshToken(config('filesystems.disks.google.refresh_token'));
-
-                    $service = new Google_Service_Drive($client);
-                    $permission = new Google_Service_Drive_Permission([
-                        'type' => 'anyone',
-                        'role' => 'reader',
-                    ]);
-                    $service->permissions->create($fileId, $permission);
-                }
-
-                // Simpan ke database
-                ProductMedia::create([
+                $media = ProductMedia::create([
                     'product_id' => $product->id,
-                    'file_path' => $fileId, // menyimpan fileId
-                    'file_type' => $file->getMimeType(),
+                    'file_path' => $uploaded['public_id'],
+                    'file_type' => $uploaded['resource_type'],
                     'original_name' => $file->getClientOriginalName(),
+                ]);
+
+                // Simpan mapping nama file ke ID media
+                $mediaMap[$file->getClientOriginalName()] = $media->id;
+            }
+        }
+
+        // Simpan variants (setelah media terupload semua)
+        if ($request->has('variants')) {
+            $product->variants()->delete();
+
+            foreach ($request->variants as $variant) {
+                $product->variants()->create([
+                    'name' => $variant['name'],
+                    'price' => $variant['price'],
+                    'product_media_id' => $mediaMap[$variant['media_id']] ?? null,
                 ]);
             }
         }
@@ -88,7 +87,6 @@ class ProductController extends Controller
     {
         $data = $request->validate([
             'name' => 'required|string',
-            'price' => 'required|numeric',
             'categories' => 'nullable|array',
             'description' => 'nullable|string',
             'shop_id' => 'required|exists:shops,id',
@@ -101,64 +99,58 @@ class ProductController extends Controller
         }
 
         $folderName = 'S' . $data['shop_id'] . '/P' . $product->id;
-        Storage::disk('google')->makeDirectory($folderName);
+
+        // Hapus media
         if ($request->has('deleted_media')) {
             foreach ($request->deleted_media as $mediaId) {
                 $media = $product->media()->where('id', $mediaId)->first();
                 if ($media) {
-                    // Hapus dari Google Drive
                     try {
-                        $client = new \Google_Client();
-                        $client->setClientId(config('filesystems.disks.google.client_id'));
-                        $client->setClientSecret(config('filesystems.disks.google.client_secret'));
-                        $client->refreshToken(config('filesystems.disks.google.refresh_token'));
-
-                        $service = new \Google_Service_Drive($client);
-                        $service->files->delete($media->file_path); // file_path = fileId
+                        Cloudinary::uploadApi()->destroy($media->file_path, [
+                            'file_type' => $media->file_type ?? 'image', // image / video
+                        ]);
                     } catch (\Exception $e) {
-                        // Log atau abaikan kalau file sudah dihapus manual
-                        \Log::warning("Gagal menghapus file Google Drive ID: {$media->file_path} — {$e->getMessage()}");
+                        \Log::warning("Gagal menghapus Cloudinary ID: {$media->file_path} — {$e->getMessage()}");
                     }
 
-                    // Hapus dari database
                     $media->delete();
                 }
             }
         }
 
+        // Upload file baru
         if ($request->hasFile('media')) {
+            $mediaMap = [];
+
             foreach ($request->file('media') as $file) {
-                $filename = $folderName . '/' . uniqid() . '_' . $file->getClientOriginalName();
+                $type = Str::startsWith($file->getMimeType(), 'video') ? 'video' : 'image';
 
-                // ⬇️ Simpan ke Google Drive
-                $path = Storage::disk('google')->putFileAs('', $file, $filename);
+                $uploaded = Cloudinary::uploadApi()->upload($file->getRealPath(), [
+                    'folder' => $folderName,
+                    'resource_type' => $type,
+                ]);
 
-                // Ambil ID file dari metadata
-                $adapter = Storage::disk('google')->getAdapter();
-                $metadata = $adapter->getMetadata($path);
-                $fileId = $metadata['extraMetadata']['id'] ?? null;
-
-                // ✅ Buat file Google Drive menjadi PUBLIC
-                if ($fileId) {
-                    $client = new Google_Client();
-                    $client->setClientId(config('filesystems.disks.google.client_id'));
-                    $client->setClientSecret(config('filesystems.disks.google.client_secret'));
-                    $client->refreshToken(config('filesystems.disks.google.refresh_token'));
-
-                    $service = new Google_Service_Drive($client);
-                    $permission = new Google_Service_Drive_Permission([
-                        'type' => 'anyone',
-                        'role' => 'reader',
-                    ]);
-                    $service->permissions->create($fileId, $permission);
-                }
-
-                // Simpan ke database
-                ProductMedia::create([
+                $media = ProductMedia::create([
                     'product_id' => $product->id,
-                    'file_path' => $fileId, // menyimpan fileId
-                    'file_type' => $file->getMimeType(),
+                    'file_path' => $uploaded['public_id'],
+                    'file_type' => $uploaded['resource_type'],
                     'original_name' => $file->getClientOriginalName(),
+                ]);
+
+                // Simpan mapping nama file ke ID media
+                $mediaMap[$file->getClientOriginalName()] = $media->id;
+            }
+        }
+
+        // Simpan variants (setelah media terupload semua)
+        if ($request->has('variants')) {
+            $product->variants()->delete();
+
+            foreach ($request->variants as $variant) {
+                $product->variants()->create([
+                    'name' => $variant['name'],
+                    'price' => $variant['price'],
+                    'product_media_id' => $mediaMap[$variant['media_id']] ?? null,
                 ]);
             }
         }
@@ -173,34 +165,27 @@ class ProductController extends Controller
 
     public function destroy($id)
     {
-        $product = Product::with('media')->findOrFail($id);
+        $product = Product::with('media', 'categories')->findOrFail($id);
 
-        // Hapus semua media dari Google Drive dan database
+        // 1. Hapus semua media dari Cloudinary
         foreach ($product->media as $media) {
-            // 1. Hapus dari Google Drive
             try {
-                $client = new \Google_Client();
-                $client->setClientId(config('filesystems.disks.google.client_id'));
-                $client->setClientSecret(config('filesystems.disks.google.client_secret'));
-                $client->refreshToken(config('filesystems.disks.google.refresh_token'));
-
-                $service = new \Google_Service_Drive($client);
-                $service->files->delete($media->file_path);
+                // Hapus file dari Cloudinary berdasarkan public_id
+                Cloudinary::uploadApi()->destroy($media->file_path);
             } catch (\Exception $e) {
-                \Log::warning("Gagal menghapus file Google Drive ID: {$media->file_path} — {$e->getMessage()}");
+                \Log::warning("Gagal menghapus file Cloudinary: {$media->file_path} — {$e->getMessage()}");
             }
 
-            // 2. Hapus dari database
+            // Hapus dari database
             $media->delete();
         }
-        $folderPath = 'S' . $product->shop_id . '/P' . $product->id;
-        Storage::disk('google')->deleteDirectory($folderPath);
-        // 3. Hapus relasi kategori (opsional tapi rapi)
+
+        // 2. Hapus relasi kategori (jika ada)
         $product->categories()->detach();
 
-        // 4. Hapus produk dari database
+        // 3. Hapus produk itu sendiri
         $product->delete();
 
-        return redirect()->back()->with('success', 'Produk berhasil dihapus beserta media-nya.');
+        return redirect()->back()->with('success', 'Produk dan semua media berhasil dihapus dari Cloudinary dan database.');
     }
 }

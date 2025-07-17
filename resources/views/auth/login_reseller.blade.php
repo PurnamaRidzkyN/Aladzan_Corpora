@@ -62,9 +62,8 @@
             <span class="mx-3 text-sm text-gray-500">atau</span>
             <div class="flex-grow h-px bg-gray-300"></div>
         </div>
-
         <!-- Login Google -->
-        <a href="{{ route('google.login') }}"
+        <a href="{{ route('google.login', ['redirect' => request()->query('redirect', url()->previous())]) }}"
             class="w-full flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-100">
             <img src="https://www.svgrepo.com/show/475656/google-color.svg" class="w-5 h-5" alt="Google">
             Login / Daftar dengan Gmail
@@ -77,7 +76,7 @@
 
         <!-- Kembali -->
         <div class="mt-4 text-center">
-            <a href="{{ url()->previous() }}" class="text-sm text-gray-500 hover:text-blue-600">&larr; Kembali</a>
+            <a href="{{ url()->previous()  }}" class="text-sm text-gray-500 hover:text-blue-600">&larr; Kembali</a>
         </div>
     </div>
 
