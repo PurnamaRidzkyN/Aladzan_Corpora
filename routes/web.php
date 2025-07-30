@@ -30,7 +30,7 @@ use App\Http\Controllers\DashboardResellerController;
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
-Route::get('/', [CatalogController::class, 'ShowHome']);
+Route::get('/', [CatalogController::class, 'ShowHome'])->name('home');
 Route::get('/product/{slug}', [CatalogController::class, 'showProduct'])->name('product.show');
 Route::get('/search', [CatalogController::class, 'search'])->name('search');
 Route::get('/kategori/{slug}', [CatalogController::class, 'kategori'])->name('category.show');
@@ -134,12 +134,10 @@ Route::middleware([ResellerMiddleware::class])->group(function () {
     Route::post('/payment/{order_code}/confirm', [PaymentController::class, 'paymentConfirm'])->name('payment.confirm');
 
     Route::get('/profil', function () {
-        return view('profile');
+        return view('store.profile.profile');
     })->name('profile');
     Route::post('/profile/edit', [ResellerController::class, 'updateProfile'])->name('profile.update');
     Route::get('/profile/change-email/{name}/{new_email}/{old_email}', [ResellerController::class, 'changeEmailReseller'])->name('change.email.reseller');
-
-    Route::get('/api/addresses', [AddressController::class, 'getAddresses'])->name('api.addresses');
 
     Route::prefix('dashboard')->group(function () {
         Route::get('/', [DashboardResellerController::class, 'index'])->name('dashboard.reseller');

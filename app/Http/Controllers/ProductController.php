@@ -8,6 +8,7 @@ use App\Models\Category;
 use Illuminate\Support\Str;
 
 use App\Models\ProductMedia;
+use App\Models\ProductVariant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
@@ -41,7 +42,7 @@ class ProductController extends Controller
         }
 
         // 4. Simpan File
-        $folderName = 'P'.'/S' . $data['shop_id'] . '/P' . $product->id;
+        $folderName = 'P' . '/S' . $data['shop_id'] . '/P' . $product->id;
 
         if ($request->hasFile('media')) {
             $mediaMap = [];
@@ -142,15 +143,29 @@ class ProductController extends Controller
         }
 
         // Simpan variants (setelah media terupload semua)
+        if ($request->has('deleted_variants')) {
+            foreach ($request->deleted_variants as $variantId) {
+                $variant = $product->variants()->where('id', $variantId)->first();
+                if ($variant) {
+                    $variant->delete();
+                }
+            }
+        }
         if ($request->has('variants')) {
-            $product->variants()->delete();
-
-            foreach ($request->variants as $variant) {
-                $product->variants()->create([
-                    'name' => $variant['name'],
-                    'price' => $variant['price'],
-                    'product_media_id' => $mediaMap[$variant['media_id']] ?? null,
-                ]);
+            foreach ($request->variants as $variantData) {
+                if (!empty($variantData['variant_id'])) {
+                    // Update varian lama
+                    $variant = ProductVariant::find($variantData['variant_id']);
+                    if ($variant) {
+                        $variant->update([
+                            'name' => $variantData['name'],
+                            'price' => $variantData['price'],
+                            'product_media_id' => $variantData['media_id'],
+                        ]);
+                    }
+                } else {
+                    return redirect()->back()->with('Error', 'Variant ID tidak ditemukan.');
+                }
             }
         }
 

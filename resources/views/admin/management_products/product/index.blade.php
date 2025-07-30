@@ -328,6 +328,7 @@
 
                                 <input type="number" :name="`variants[${index}][price]`" x-model="variant.price"
                                     class="input input-bordered w-full" placeholder="Harga Varian" required>
+                                    <input type="hidden" :name="`variants[${index}][variant_id]`" x-model="variant.id">
                             </div>
 
                             <!-- Pilih Gambar dari Media -->
@@ -350,25 +351,38 @@
 
                                 <!-- Daftar semua pilihan gambar/video -->
                                 <template x-for="media in $store.productForm.mediaOptions" :key="media.id">
-                                    <option :value="media.name" x-text="media.name"></option>
+                                    <option :value="media.id" x-text="media.name"></option>
                                 </template>
                             </select>
 
 
                             <!-- Tombol Hapus -->
                             <div class="text-right">
-                                <button type="button" @click="$store.productForm.formData.variants.splice(index, 1)"
-                                    class="btn btn-sm btn-gradient-error">Hapus</button>
+                                 <button 
+                                    type="button" 
+                                    @click="
+                                        if (variant.id) {
+                                            // Tambahkan hidden input 'deleted_variants[]'
+                                            $refs.deletedVariants.insertAdjacentHTML(
+                                                'beforeend', 
+                                                `<input type='hidden' name='deleted_variants[]' value='${variant.id}'>`
+                                            );
+                                        }
+                                        $store.productForm.formData.variants.splice(index, 1); // Hapus dari UI
+                                    "
+                                    class="btn btn-sm btn-gradient-error">
+                                    Hapus
+                                </button>
                             </div>
                         </div>
                     </template>
 
                     <!-- Tombol Tambah Varian -->
                     <button type="button"
-                        @click="$store.productForm.formData.variants.push({ name: '', price: '', media_id: null })"
+                        @click="$store.productForm.formData.variants.push({ name: '', price: '', media_id: null ,variant_id : null})"
                         class="btn btn-sm btn-outline mt-2">+ Tambah Variasi</button>
                 </div>
-
+    <div x-ref="deletedVariants"></div>
                 <!-- Tombol Aksi -->
                 <div class="col-span-1 md:col-span-2 flex justify-end gap-2 pt-4 border-t mt-4">
                     <label for="modal_produk" class="btn  btn-gradient-neutral"

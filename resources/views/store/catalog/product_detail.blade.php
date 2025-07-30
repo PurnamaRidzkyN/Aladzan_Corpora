@@ -176,14 +176,34 @@
 
                 <!-- Modal -->
                 <input type="checkbox" id="modal_keranjang" class="modal-toggle" />
-                <div class="modal">
+                <div class="modal" x-data="{
+                    selectedImage: '',
+                    selectVariant(variant) {
+                        this.selectedVariant = variant;
+                        this.quantity = 1;
+                
+                        // Cari media berdasarkan ID di product.media
+                        if (variant.product_media_id) {
+                            const media = product.media.find(m => m.id === variant.product_media_id);
+                            this.selectedImage = media ?
+                                cloudinaryUrl(media.file_path) :
+                                (product.media.length ? cloudinaryUrl(product.media[0].file_path) : 'https://via.placeholder.com/300x200?text=No+Image');
+                        } else {
+                            // Jika varian tidak punya media, fallback ke media produk
+                            this.selectedImage = product.media.length ?
+                                cloudinaryUrl(product.media[0].file_path) :
+                                'https://via.placeholder.com/300x200?text=No+Image';
+                        }
+                    }
+                }">
+
                     <div class="modal-box max-w-md w-full p-6 rounded-xl">
                         <!-- Header -->
                         <div class="flex justify-between items-start mb-4">
                             <div>
                                 <h2 class="text-lg font-bold text-gray-800" x-text="product.name"></h2>
-                                <p class="text-blue-600 font-semibold mt-1">Rp
-                                    <span x-text="formatPrice(selectedVariant?.price || 0)"></span>
+                                <p class="text-blue-600 font-semibold mt-1">
+                                    Rp <span x-text="formatPrice(selectedVariant?.price || 0)"></span>
                                 </p>
                                 <p class="text-sm text-yellow-500 flex items-center gap-1">
                                     <i class="fas fa-star text-yellow-400"></i>
@@ -193,11 +213,19 @@
                             <label for="modal_keranjang" class="btn btn-sm btn-circle btn-ghost text-xl">✕</label>
                         </div>
 
+                        <!-- Gambar Utama -->
+                        <div class="mb-3">
+                            <img :src="selectedImage || (product.media.length ? cloudinaryUrl(product.media[0].file_path) :
+                                'https://via.placeholder.com/300x200?text=No+Image')"
+                                alt="Gambar Produk"
+                                class="w-full h-40 object-cover rounded-lg border transition duration-300">
+                        </div>
+
                         <!-- Form -->
                         <form method="POST" action="{{ route('product.handleAction') }}" class="space-y-4">
                             @csrf
                             <input type="hidden" name="product_variant_id" :value="selectedVariant?.id">
-                            <input type="hidden" name="action" :value="modalAction"> <!-- kirim aksi -->
+                            <input type="hidden" name="action" :value="modalAction">
 
                             <!-- Varian -->
                             <div>
@@ -205,7 +233,7 @@
                                 <div class="flex flex-wrap gap-2">
                                     <template x-for="variant in product.variants" :key="variant.id">
                                         <button type="button" class="btn btn-sm"
-                                            :class="variant.id === selectedVariant?.id ? 'btn-primary' : 'btn-outline'"
+                                            :class="variant.id === selectedVariant?.id ? 'btn-gradient-primary' : 'btn-outline'"
                                             @click="selectVariant(variant)">
                                             <span x-text="variant.name"></span>
                                         </button>
@@ -227,20 +255,28 @@
                             <!-- Total -->
                             <div class="text-sm font-medium text-gray-700">
                                 Total Harga:
-                                <span class="text-blue-600 font-bold">Rp <span
-                                        x-text="formatPrice(totalPrice())"></span></span>
+                                <span class="text-blue-600 font-bold">
+                                    Rp <span x-text="formatPrice(totalPrice())"></span>
+                                </span>
                             </div>
 
                             <!-- Aksi -->
                             <div class="flex justify-end gap-2 pt-2">
-                                <label for="modal_keranjang" class="btn">Batal</label>
-                                <button type="submit" class="btn btn-primary" :disabled="!selectedVariant"
+                                <label for="modal_keranjang" class="btn btn-gradient-neutral">Batal</label>
+                                <button type="submit" class="btn btn-gradient-primary" :disabled="!selectedVariant"
                                     x-text="modalAction === 'buy_now' ? 'Beli Sekarang' : 'Tambah ke Keranjang'">
                                 </button>
                             </div>
                         </form>
                     </div>
                 </div>
+
+                <script>
+                    function cloudinaryUrl(path) {
+                        return `{{ cloudinary_url('') }}`.replace(/\/$/, '') + '/' + path;
+                    }
+                </script>
+
             </div>
 
             <form action="{{ route('favorite.store') }}" method="POST">
@@ -315,38 +351,70 @@
     <!-- Produk Serupa -->
     <section class="max-w-6xl mx-auto px-6 mt-12">
         <h2 class="text-xl font-semibold text-gray-800 mb-4">Produk Serupa</h2>
-        <div class="overflow-x-auto scrollbar-hide">
-            <div class="flex gap-5">
-                @foreach ($products as $related)
+        <div class="overflow-x-auto">
+            <div class="flex gap-4">
+                @foreach ($products as $product)
                     <div
-                        class="min-w-[220px] bg-white rounded-xl shadow-sm hover:shadow-md transition p-3 border border-gray-200">
-                        <img src="{{ $related->media->first()?->image_url ?? 'https://via.placeholder.com/200x150' }}"
-                            class="rounded-lg mb-3 w-full h-32 object-cover" />
-                        <h3 class="text-sm font-semibold text-gray-800 line-clamp-2">
-                            {{ $related->name }}
-                        </h3>
-                        <div class="text-sm text-yellow-400 mt-1">
-                            ★★★★☆ <span class="text-gray-500 text-xs">(4.5)</span>
+                        class="flex-none w-56 bg-white border border-blue-100 rounded-xl p-3 shadow-sm hover:shadow-md hover:bg-blue-50 transition">
+                        <a href="{{ route('product.show', $product->slug) }}">
+                            <img src="{{ cloudinary_url($product->media->first()?->file_path ?? 'https://source.unsplash.com/300x200/?product') }}"
+                                alt="{{ $product->name }}" class="w-full h-32 object-cover rounded-lg mb-2" />
+                        </a>
+
+                        <h3 class="text-sm font-semibold truncate text-blue-900 mb-1">{{ $product->name }}</h3>
+
+                        @php
+                            $avg = round($product->rating->rating ?? 0);
+                            $avgDecimal = number_format($product->rating->rating ?? 0, 1);
+                            $count = $product->rating->rating_count ?? 0;
+                        @endphp
+
+                        <div>
+                            <!-- Bintang -->
+                            <div class="text-yellow-500 text-xs">
+                                @for ($i = 1; $i <= 5; $i++)
+                                    @if ($i <= $avg)
+                                        ★
+                                    @else
+                                        ☆
+                                    @endif
+                                @endfor
+                            </div>
+
+                            <!-- Rating & terjual -->
+                            <div class="text-[11px] text-slate-400">
+                                ({{ $avgDecimal }}) · {{ $product->sold ?? 0 }} terjual
+                            </div>
                         </div>
-                        <div class="text-xs text-gray-500 mb-1">
-                            Toko: <span class="text-gray-700 font-medium">{{ $related->shop->name }}</span>
-                        </div>
-                        <p class="text-sm text-blue-600 font-bold">Rp {{ number_format($related->price, 0, ',', '.') }}
+
+                        <p class="text-[11px] text-slate-500 mt-1 truncate">
+                            oleh <span class="font-semibold text-blue-700">{{ $product->shop->name }}</span>
                         </p>
-                        <a href="{{ route('product.show', $related->slug) }}"
-                            class="mt-2 w-full block bg-blue-600 text-white text-xs py-1.5 text-center rounded-md hover:bg-blue-700">
-                            Lihat Produk
+
+                        @if ($product->variants->count())
+                            <p class="text-blue-600 font-bold text-sm mt-1">
+                                Rp {{ number_format($product->variants->first()->price, 0, ',', '.') }}
+                            </p>
+                        @else
+                            <p class="text-slate-400 text-sm">Belum ada harga</p>
+                        @endif
+
+                        <a href="{{ route('product.show', $product->slug) }}"
+                            class="btn btn-sm btn-gradient-primary w-full mt-2">
+                            Lihat Detail
                         </a>
                     </div>
                 @endforeach
             </div>
         </div>
+
     </section>
 
     <!-- Modal DaisyUI -->
     <input type="checkbox" id="modal_review" class="modal-toggle" />
     <div class="modal">
-        <div class="modal-box w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl p-6" x-data="{ selectedStar: 0 }">
+        <div class="modal-box w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl p-6"
+            x-data="{ selectedStar: 0 }">
 
             <!-- Tombol X -->
             <label for="modal_review" class="btn btn-sm btn-circle absolute right-3 top-3">✕</label>
@@ -371,12 +439,12 @@
 
             <!-- Filter bintang -->
             <div class="flex flex-wrap gap-2 mb-6">
-                <button @click="selectedStar = 0" :class="selectedStar === 0 ? 'btn-primary' : 'btn-outline'"
-                    class="btn btn-sm">Semua</button>
+                <button @click="selectedStar = 0" :class="selectedStar === 0 ? 'btn-gradient-primary' : 'btn-outline'"
+                    class="btn btn-sm  ">Semua</button>
                 @foreach ([5, 4, 3, 2, 1] as $star)
                     <button @click="selectedStar = {{ $star }}"
-:class="selectedStar === {{ $star }} ? 'btn-gradient-primary' : 'btn-gradient-neutral'"
-                        class="btn btn-sm flex items-center gap-1">
+                        :class="selectedStar === {{ $star }} ? 'btn-gradient-primary' : 'btn-outline'"
+                        class="btn btn-sm  flex items-center gap-1">
                         @for ($i = 0; $i < $star; $i++)
                             <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path
@@ -411,76 +479,7 @@
 
         </div>
     </div>
-    <input type="checkbox" id="modal_keranjang" class="modal-toggle" />
-    <div class="modal">
-        <div class="modal-box max-w-md w-full p-6 rounded-xl" x-data="cartForm({{ $product->toJson() }})">
-            <!-- Header -->
-            <div class="flex justify-between items-start mb-4">
-                <div>
-                    <h2 class="text-lg font-bold text-gray-800" x-text="product.name"></h2>
-                    <p class="text-blue-600 font-semibold mt-1">Rp <span
-                            x-text="formatPrice(selectedVariant?.price || 0)"></span></p>
-                    <p class="text-sm text-yellow-500 flex items-center gap-1">
-                        <i class="fas fa-star text-yellow-400"></i>
 
-                        <span x-text="Number(product.rating?.rating || 0).toFixed(1)"></span>
-
-                    </p>
-                </div>
-                <label for="modal_keranjang" class="btn btn-sm btn-circle btn-ghost text-xl">✕</label>
-            </div>
-
-            <form method="POST" action="" class="space-y-4">
-                @csrf
-                <input type="hidden" name="product_id" :value="product.id">
-                <input type="hidden" name="variant_id" :value="selectedVariant?.id">
-
-                <!-- Varian -->
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-700">Pilih Varian</label>
-                    <div class="flex flex-wrap gap-2">
-                        <template x-for="variant in product.variants" :key="variant.id">
-                            <button type="button" class="btn btn-sm"
-                                :class="variant.id === selectedVariant?.id ? 'btn-primary' : 'btn-outline'"
-                                @click="selectVariant(variant)">
-                                <span x-text="variant.name"></span>
-                            </button>
-                        </template>
-                    </div>
-                </div>
-
-                <!-- Jumlah -->
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-700">Jumlah</label>
-                    <div class="flex items-center gap-3">
-                        <button type="button" class="btn btn-sm" @click="decrement()">−</button>
-                        <input type="number" name="quantity" x-model="quantity"
-                            class="input input-bordered w-20 text-center" min="1" />
-                        <button type="button" class="btn btn-sm" @click="increment()">+</button>
-                    </div>
-                </div>
-
-                <!-- Total -->
-                <div class="text-sm font-medium text-gray-700">
-                    Total Harga:
-                    <span class="text-blue-600 font-bold">Rp <span x-text="formatPrice(totalPrice())"></span></span>
-                </div>
-
-                <!-- Catatan -->
-                <div>
-                    <label class="block text-sm font-medium mb-1 text-gray-700">Catatan</label>
-                    <textarea name="note" class="textarea textarea-bordered w-full" placeholder="Contoh: warna bebas..."></textarea>
-                </div>
-
-                <!-- Aksi -->
-                <div class="flex justify-end gap-2 pt-2">
-                    <label for="modal_keranjang" class="btn">Batal</label>
-                    <button type="submit" class="btn btn-primary" :disabled="!selectedVariant">Tambah ke
-                        Keranjang</button>
-                </div>
-            </form>
-        </div>
-    </div>
     <script>
         function cartForm(product) {
             return {

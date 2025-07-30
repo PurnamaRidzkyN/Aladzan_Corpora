@@ -16,7 +16,7 @@ class AddressController extends Controller
     {
         $addresses = auth()->user()->addresses()->get();
         $chooseeAddress = false;
-        return view('store.profile.address', compact('addresses', 'chooseeAddress')); 
+        return view('store.profile.address', compact('addresses', 'chooseeAddress'));
     }
 
     public function store(Request $request)
@@ -53,7 +53,7 @@ class AddressController extends Controller
             $response = Http::withHeaders([
                 'key' => config('services.rajaongkir.key'),
             ])->get('https://rajaongkir.komerce.id/api/v1/destination/domestic-destination', [
-                'search' => '40973',
+                'search' => $request->zipcode,
                 'limit' => 1,
                 'offset' => 0,
             ]);
@@ -82,7 +82,12 @@ class AddressController extends Controller
                 'sub_district' => $data['data'][0]['subdistrict_name'],
                 'sub_district_id' => $data['data'][0]['id'],
             ]);
-
+            if ($request->has('items_json')) {
+                $request = new Request([
+                    'items_json' => $request->items_json,
+                ]);
+                return app(PaymentController::class)->chooseAddress($request);
+            }
             return redirect()->back()->with('success', 'Alamat berhasil ditambahkan.');
         }
     }
@@ -98,7 +103,6 @@ class AddressController extends Controller
             'village' => 'nullable|string|max:255',
             'zipcode' => 'required|string|max:255',
             'address_detail' => 'required|string',
-            'sub_district_id' => 'required|string|max:255',
         ]);
         $address = Address::findOrFail($id);
         if ($request->zipcode != $address->zipcode) {
@@ -152,6 +156,12 @@ class AddressController extends Controller
         } else {
             $address->update(['recipient_name' => $request->recipient_name, 'phone_number' => $request->phone_number, 'neighborhood' => $request->neighborhood, 'hamlet' => $request->hamlet, 'village' => $request->village, 'address_detail' => $request->address_detail]);
         }
+        if ($request->has('items_json')) {
+            $request = new Request([
+                'items_json' => $request->items_json,
+            ]);
+            return app(PaymentController::class)->chooseAddress($request);
+        }
 
         return redirect()->back()->with('success', 'Alamat berhasil diperbarui.');
     }
@@ -160,14 +170,12 @@ class AddressController extends Controller
     {
         $address = Address::findOrFail($id);
         $address->delete();
-        if ($request->ajax()) {
-            return response()->json(['success' => true, 'message' => 'Alamat berhasil dihapus.']);
+        if ($request->has('items_json')) {
+            $request = new Request([
+                'items_json' => $request->items_json,
+            ]);
+            return app(PaymentController::class)->chooseAddress($request);
         }
         return back()->with('success', 'Alamat berhasil dihapus.');
-    }
-    public function getAddresses()
-    {
-        $addresses = auth()->user()->addresses()->get();
-        return response()->json($addresses);
     }
 }

@@ -46,7 +46,7 @@ class PaymentController extends Controller
         }
         $addresses = auth()->user()->addresses()->get();
         $chooseeAddress = true;
-        return view('reseller.address.index', compact('cartItemIds', 'addresses', 'chooseeAddress'));
+        return view('store.profile.address', compact('cartItemIds', 'addresses', 'chooseeAddress','items'));
     }
     public function checkout(Request $request)
     {
@@ -99,50 +99,7 @@ class PaymentController extends Controller
             $shop = $itemsPerShop->first()->variant->product->shop;
             $origin = $shop->sub_district_id;
 
-            // Cek apakah ongkir sudah disimpan di DB
-            $cachedOngkir = ShippingCost::where([['origin', $origin], ['destination', $destination], ['weight', $totalWeight]])->first();
-
-            if ($cachedOngkir) {
-                $ongkir = $cachedOngkir->cost;
-            } else {
-                // Panggil API RajaOngkir
-                $response = Http::asForm()
-                    ->withHeaders([
-                        'accept' => 'application/json',
-                        'key' => config('services.rajaongkir.key'),
-                    ])
-                    ->post('https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost', [
-                        'origin' => $origin,
-                        'destination' => $destination,
-                        'weight' => $totalWeight,
-                        'courier' => 'jne',
-                    ]);
-
-                $data = $response->json();
-
-                if (!isset($data['data']) || empty($data['data'])) {
-                    return redirect()
-                        ->route('cart')
-                        ->with('error', 'Gagal hitung ongkir untuk toko ' . $shopName);
-                }
-
-                $regularService = collect($data['data'])->firstWhere('service', 'REG');
-                if (!$regularService) {
-                    return redirect()
-                        ->route('cart')
-                        ->with('error', 'Layanan JNE REG tidak tersedia untuk toko ' . $shopName);
-                }
-
-                $ongkir = $regularService['cost'] ?? 0;
-
-                // Simpan ke database untuk cache
-                ShippingCost::create([
-                    'origin' => $origin,
-                    'destination' => $destination,
-                    'weight' => $totalWeight,
-                    'cost' => $ongkir,
-                ]);
-            }
+            $ongkir = $this->calculateShipping($origin, $destination, $totalWeight, $shopName);
 
             $ongkirPerShop[$shopName] = $ongkir;
             $totalOngkir += $ongkir;
@@ -150,7 +107,7 @@ class PaymentController extends Controller
 
         $subtotalAll = array_sum($shopSubtotals);
         $total = $subtotalAll + $totalOngkir;
-        return view('checkout', compact('cartItems', 'shopSubtotals', 'totalOngkir', 'subtotalAll', 'total', 'ongkirPerShop', 'address'));
+        return view('store.profile.checkout', compact('cartItems', 'shopSubtotals', 'totalOngkir', 'subtotalAll', 'total', 'ongkirPerShop', 'address'));
     }
     public function checkoutConfirm(Request $request)
     {
@@ -211,7 +168,7 @@ class PaymentController extends Controller
 
             return redirect()->route('payment', $order->order_code);
         } catch (\Illuminate\Validation\ValidationException $e) {
-             DB::rollBack();
+            DB::rollBack();
             return redirect()->route('cart')->withErrors($e->validator)->withInput();
         }
     }
@@ -228,7 +185,7 @@ class PaymentController extends Controller
             'QRIS' => [['id' => 'qris', 'name' => 'QRIS', 'type' => 'qris', 'description' => 'Scan QR dengan aplikasi apapun']],
         ];
 
-        return view('payment', compact('order', 'methods','total'));
+        return view('store.profile.payment', compact('order', 'methods', 'total'));
     }
     public function paymentConfirm(Request $request)
     {
@@ -256,5 +213,48 @@ class PaymentController extends Controller
             'payment_method' => $validated['selected_method_id'],
         ]);
         return redirect()->route('order.history')->with('success', 'Bukti pembayaran sudah di kirimkan.');
+    }
+
+    private function calculateShipping($origin, $destination, $weight, $shopName)
+    {
+        $cachedOngkir = ShippingCost::where([['origin', $origin], ['destination', $destination], ['weight', $weight]])->first();
+
+        if ($cachedOngkir) {
+            return $cachedOngkir->cost;
+        }
+
+        $response = Http::asForm()
+            ->withHeaders([
+                'accept' => 'application/json',
+                'key' => config('services.rajaongkir.key'),
+            ])
+            ->post('https://rajaongkir.komerce.id/api/v1/calculate/domestic-cost', [
+                'origin' => $origin,
+                'destination' => $destination,
+                'weight' => $weight,
+                'courier' => 'jne',
+            ]);
+
+        $data = $response->json();
+
+        if (!isset($data['data']) || empty($data['data'])) {
+            throw new \Exception('Gagal hitung ongkir untuk toko ' . $shopName);
+        }
+
+        $regularService = collect($data['data'])->firstWhere('service', 'REG');
+        if (!$regularService) {
+            throw new \Exception('Layanan JNE REG tidak tersedia untuk toko ' . $shopName);
+        }
+
+        $ongkir = $regularService['cost'] ?? 0;
+
+        ShippingCost::create([
+            'origin' => $origin,
+            'destination' => $destination,
+            'weight' => $weight,
+            'cost' => $ongkir,
+        ]);
+
+        return $ongkir;
     }
 }

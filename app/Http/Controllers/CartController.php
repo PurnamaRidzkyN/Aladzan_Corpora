@@ -42,9 +42,27 @@ class CartController extends Controller
             }
 
             return redirect()->back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
-        }
+        } elseif ($request->action === 'buy_now') {
+            $validated = $request->validate([
+                'product_variant_id' => 'required|exists:product_variants,id',
+                'quantity' => 'required|integer|min:1',
+            ]);
+            $cart = Cart::create([
+                'reseller_id' => auth()->id(),
+                'product_variant_id' => $validated['product_variant_id'],
+                'quantity' => $validated['quantity'],
+            ]);
+           $request = new Request([
+    'items_json' => json_encode([
+        [
+            'id' => $cart->id,
+            'qty' => $validated['quantity'],
+        ]
+    ]),
+]);
 
-        // Tambahan untuk "buy_now" bisa kamu isi nanti
+            return app(PaymentController::class)->chooseAddress($request); //
+        }
     }
     public function cartDestroy($id)
     {

@@ -22,7 +22,7 @@
                                                 name="selected_items[]" value="{{ $item->id }}"
                                                 data-price="{{ $item->variant->price * $item->quantity }}"
                                                 data-qty="{{ $item->quantity }}">
-                                            <img src="{{ $item->variant->media?->file_path ? cloudinary_url($item->variant->media->file_path) : 'https://placehold.co/150x100?text=No+Media' }}"
+                                            <img src="{{ $item->variant->media?->file_path ? cloudinary_url($item->variant->media->file_path, 'image', 'w_80,h_80,c_fill,q_auto,f_auto') : 'https://placehold.co/150x100?text=No+Media' }}"
                                                 alt="Gambar Produk" class="w-20 h-20 object-cover rounded-lg" />
 
                                             <div class="text-sm sm:text-base">
@@ -43,7 +43,7 @@
                                             </div>
                                         </div>
 
-                                        <button for="delete-modal" class="btn btn-gradient-error btn-xs"
+                                        <button  type="button"  class="btn btn-gradient-error btn-xs"
                                             @click="deleteId = {{ $item->id }}; cart_modal.showModal()">
                                             Hapus
                                         </button>

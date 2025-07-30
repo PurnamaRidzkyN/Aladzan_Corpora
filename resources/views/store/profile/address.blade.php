@@ -1,16 +1,18 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="space-y-6">
+    <div class="space-y-6" x-data="{ openChoose: false, openDelete: false, actionChoose: '', actionDelete: '' }">
         <!-- Judul utama -->
         <h1 class="text-2xl font-bold text-primary mb-4">Daftar Alamat</h1>
 
         <!-- Baris tombol aksi -->
         <div class="flex justify-between items-center mb-6">
             <!-- Tombol kembali -->
-            <a href="{{ route('profile') }}" class="btn btn-gradient-neutral">
-                ← Kembali
-            </a>
+            @if (!$chooseeAddress)
+                <a href="{{ route('profile') }}" class="btn btn-gradient-neutral">
+                    ← Kembali
+                </a>
+            @endif
 
             <!-- Tombol tambah alamat -->
             <button class="btn-gradient-primary" onclick="addModal.showModal()">
@@ -41,30 +43,28 @@
                         </div>
 
                         <div class="flex flex-wrap gap-2">
-                            <form method="POST" action="{{ route('checkout') }}">
-                                @csrf
-                                @method('post')
-                                @if ($chooseeAddress)
-                                    <input type="hidden" name="items_json" id="itemsJson"
-                                        value='{{ json_encode($cartItemIds) }}'>
-                                    <input type="hidden" name="address_id" value="{{ $address->id }}">
-                                    <button class="btn btn-sm  btn-gradient-error"
-                                        onclick="return confirm('Pilih alamat ini?')">
-                                        Pilih
-                                    </button>
-                                @endif
-                            </form>
-                            <button class="btn btn-sm  btn-gradient-warning" onclick="editAddress({{ $address }})">
+                            <button type="button" class="btn btn-sm btn-gradient-primary"
+                                @click="
+                                    actionChoose='{{ route('checkout') }}';
+                                    openChoose=true;
+                                ">
+                                Pilih
+                            </button>
+
+                            <!-- Tombol EDIT -->
+                            <button class="btn btn-sm btn-gradient-warning" onclick="editAddress({{ $address }})">
                                 ✏️ Edit
                             </button>
-                            <form method="POST" action="{{ route('address.destroy', $address) }}">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm  btn-gradient-error"
-                                    onclick="return confirm('Hapus alamat ini?')">
-                                    🗑️ Hapus
-                                </button>
-                            </form>
+
+                            <!-- Tombol HAPUS -->
+                            <button type="button" class="btn btn-sm btn-gradient-error"
+                                @click="
+                                    actionDelete='{{ route('address.destroy', $address) }}';
+                                    openDelete=true;
+                                ">
+                                🗑️ Hapus
+                            </button>
+
 
                         </div>
                     </div>
@@ -87,7 +87,43 @@
                 <div class="col-span-full text-center text-gray-500">Belum ada alamat.</div>
             @endforelse
         </div>
+        <!-- MODAL PILIH -->
+        <div x-show="openChoose" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            x-transition>
+            <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+                <h3 class="font-bold text-lg">Konfirmasi</h3>
+                <p class="py-4">Pilih alamat ini?</p>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="btn btn-gradient-neutral" @click="openChoose=false">Batal</button>
+                    <form method="POST" :action="actionChoose">
+                        @csrf
+                        <input type="hidden" name="items_json" value='{{ json_encode($cartItemIds) }}'>
+                        <input type="hidden" name="address_id" value="{{ $address->id }}">
+                        <button type="submit" class="btn btn-gradient-success">Ya</button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
+        <!-- MODAL HAPUS -->
+        <div x-show="openDelete" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+            x-transition>
+            <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+                <h3 class="font-bold text-lg">Konfirmasi</h3>
+                <p class="py-4">Hapus alamat ini?</p>
+                <div class="flex justify-end gap-2">
+                    <button type="button" class="btn btn-gradient-neutral" @click="openDelete=false">Batal</button>
+                    <form method="POST" :action="actionDelete">
+                        @csrf
+                        @method('DELETE')
+                        @if ($chooseeAddress)
+                            <input type="hidden" name="items_json" value='@json($items)'>
+                        @endif
+                        <button type="submit" class="btn btn-gradient-error">Hapus</button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
     </div>
 
@@ -145,10 +181,12 @@
                             rows="2" required></textarea>
                     </div>
                 </div>
-
+                @if ($chooseeAddress)
+                    <input type="hidden" name="items_json" value='@json($items)'>
+                @endif
                 <div class="modal-action flex justify-end gap-2">
                     <button type="submit" class="btn btn-gradient-primary">Simpan</button>
-                    <button type="button" class="btn btn-gradient-neutral" onclick="addModal.close()">Batal</button>
+                    <button type="button" class="btn btn-gradient-neutral" onclick="resetModal()">Batal</button>
                 </div>
             </form>
         </div>
@@ -156,24 +194,36 @@
 
     {{-- JavaScript --}}
     <script>
-        function editAddress(address) {
-            const modal = document.getElementById('addModal');
-            document.getElementById('modalTitle').innerText = 'Edit Alamat';
+        const modal = document.getElementById('addModal');
+        const form = document.getElementById('addressForm');
+        const modalTitle = document.getElementById('modalTitle');
 
-            const form = document.getElementById('addressForm');
-            form.action = `/profil/address/${address.id}`;
-            // Hapus _method jika sudah ada agar tidak dobel
+        function editAddress(address) {
+            modalTitle.innerText = 'Edit Alamat';
+            form.action = `/address/${address.id}`;
             form.querySelector('input[name="_method"]')?.remove();
-            // Tambahkan PUT untuk edit
             form.insertAdjacentHTML('beforeend', '<input type="hidden" name="_method" value="PUT">');
 
-            // Set value
+            // Isi form dengan data address
             for (const key in address) {
                 const input = document.getElementById('form_' + key);
                 if (input) input.value = address[key] ?? '';
             }
 
             modal.showModal();
+        }
+
+        function resetModal() {
+            // Reset title & form action
+            modalTitle.innerText = 'Tambah Alamat';
+            form.action = `{{ route('address.store') }}`;
+            form.querySelector('input[name="_method"]')?.remove();
+
+            // Kosongkan semua input
+            form.reset();
+
+            // Tutup modal
+            modal.close();
         }
     </script>
 @endsection
