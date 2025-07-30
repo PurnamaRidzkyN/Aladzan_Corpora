@@ -1,6 +1,12 @@
 @extends('layouts.dashboard')
-@section('title', 'Kategori Produk')
-
+@section('title', 'List Admin')
+@php
+    $title = 'List Admin';
+    $breadcrumb = [
+        ['label' => 'Manajemen Admin'],
+        ['label' => 'List Admin'],
+    ];
+@endphp
 @section('content')
     <section class="w-full lg:px-12 mt-8">
         <div class="card bg-white shadow-md rounded-xl border border-soft">
@@ -9,7 +15,7 @@
                 <!-- Header -->
                 <div class="flex justify-between items-center mb-4">
                     <h2 class="text-2xl font-bold text-primary">Manajemen Admin</h2>
-                    <label for="modal_admin" class="btn btn-sm text-white btn-gradient-primary border-none">
+                    <label for="modal_admin" class="btn  btn-gradient-primary border-none">
                         + Tambah Admin
                     </label>
                 </div>
@@ -63,7 +69,7 @@
                                                             Hapus</button>
                                                     </form>
                                                     <label for="delete-admin-{{ $admin->id }}"
-                                                        class="btn">Batal</label>
+                                                        class="btn  btn-gradient-neutral">Batal</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -93,8 +99,8 @@
                     <input type="text" name="name" placeholder="Nama" class="input input-bordered w-full" required>
                     <input type="email" name="email" placeholder="Email" class="input input-bordered w-full" required>
                     <div class="modal-action">
-                        <button class="btn btn-gradient-primary text-white">Simpan</button>
-                        <label for="modal_admin" class="btn">Batal</label>
+                        <button class="btn btn-gradient-primary ">Simpan</button>
+                        <label for="modal_admin" class="btn  btn-gradient-neutral">Batal</label>
                     </div>
                 </form>
             </div>

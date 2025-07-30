@@ -1,35 +1,40 @@
 <?php
 
+use App\Models\Cart;
+use App\Models\Reseller;
+use App\Models\Wishlist;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShopController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\CourseController;
+use App\Http\Controllers\OngkirController;
 use App\Http\Controllers\ReviewController;
+use App\Http\Controllers\AddressController;
+use App\Http\Controllers\CatalogController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProductController;
 use App\Http\Middleware\ResellerMiddleware;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\ResellerController;
-// use App\Http\Middleware\AdminMiddleware; // Jika ingin pakai admin middleware
-// use App\Http\Controllers\OrderHistoryController;
-// use App\Http\Controllers\GoogleDriveController;
+use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\DashboardResellerController;
 
 /*
 |--------------------------------------------------------------------------
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
-Route::get('/', [ResellerController::class, 'ShowHome'])->name('home');
-Route::get('/product/{slug}', [ResellerController::class, 'showProduct'])->name('product.show');
-Route::get('/search', [ResellerController::class, 'search'])->name('search');
-Route::get('/kategori/{slug}', [ResellerController::class, 'kategori'])->name('category.show');
-Route::get('/shop/{slug}', [ResellerController::class, 'shop'])->name('shop.show');
-Route::post('prouct/cart', [ResellerController::class, 'handleCartOrBuy'])->name('product.handleAction');
-Route::get('/cart', [ResellerController::class, 'cart'])->name('cart');
-Route::get('/dashboard', function () {
-    return view('dashboard');
-});
+Route::get('/', [CatalogController::class, 'ShowHome']);
+Route::get('/product/{slug}', [CatalogController::class, 'showProduct'])->name('product.show');
+Route::get('/search', [CatalogController::class, 'search'])->name('search');
+Route::get('/kategori/{slug}', [CatalogController::class, 'kategori'])->name('category.show');
+Route::get('/shop/{slug}', [CatalogController::class, 'shop'])->name('shop.show');
 
 /*
 |--------------------------------------------------------------------------
@@ -63,17 +68,6 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 
 /*
 |--------------------------------------------------------------------------
-| RESELLER AUTHENTICATED ROUTES
-|--------------------------------------------------------------------------
-*/
-Route::middleware([ResellerMiddleware::class])->group(function () {
-    Route::get('/favorite', [ResellerController::class, 'favorite'])->name('favorite');
-    Route::post('/favorite', [ResellerController::class, 'favoriteStore'])->name('favorite.store');
-    Route::delete('/favorite/{id}', [ResellerController::class, 'favoriteDestroy'])->name('favorite.destroy');
-});
-
-/*
-|--------------------------------------------------------------------------
 | STAFF / ADMIN AUTH
 |--------------------------------------------------------------------------
 */
@@ -96,30 +90,65 @@ Route::get('/admin/reseller', function () {
 */
 Route::middleware([AdminMiddleware::class])->group(function () {
     Route::prefix('staff-only')->group(function () {
+        Route::get('/dashboard', function () {
+            return view('dashboard_admin');
+        })->name('dashboard.admin');
         Route::resource('categories', CategoryController::class);
         Route::resource('shops.products', ProductController::class)->shallow();
         Route::resource('shops', ShopController::class);
-        Route::resource('orders', OrderController::class);
-        Route::resource('reviews', ReviewController::class);
+        Route::get('/orders', [OrderController::class, 'currentOrders'])->name('orders.current');
+        Route::post('/orders/update-status', [OrderController::class, 'changeStatus'])->name('order.update-status');
+        Route::get('/orders/history', [OrderController::class, 'history_orders'])->name('orders.history');
+        Route::get('reviews/{slug}', [ReviewController::class, 'index'])->name('reviews.show');
+        Route::put('reviews/{id}/reply', [ReviewController::class, 'reviewReply'])->name('reviews.reply');
         Route::resource('admins', AdminController::class);
-        // Route::resource('orders/history', OrderHistoryController::class); // Enable when controller exists
+        Route::get('/course', [CourseController::class, 'groupVideoIndex'])->name('group.course');
+        Route::post('/course', [CourseController::class, 'groupVideoStore'])->name('group.course.store');
+        Route::put('/course/{id}', [CourseController::class, 'groupVideoUpdate'])->name('group.course.update');
+        Route::delete('/course/{id}', [CourseController::class, 'groupVideoDestroy'])->name('group.course.destroy');
+        Route::get('/course/{id}/video', [CourseController::class, 'videoIndex'])->name('group.course.video');
+        Route::post('/course/{id}/video', [CourseController::class, 'videoStore'])->name('group.course.video.store');
+        Route::put('/course/{id}/video/{video_id}', [CourseController::class, 'videoUpdate'])->name('group.course.video.update');
+        Route::delete('/course/{id}/video/{video_id}', [CourseController::class, 'videoDestroy'])->name('group.course.video.destroy');
+        Route::get('/course/{id}/video/{video_id}', [CourseController::class, 'videoShow'])->name('group.course.video.show');
+        Route::resource('discount', DiscountController::class);
     });
 });
-/*
-|--------------------------------------------------------------------------
-| (Optional) Google Drive Integration
-|--------------------------------------------------------------------------
-*/
-// Route::get('/google/authorize', [GoogleDriveController::class, 'redirectToGoogle']);
-// Route::get('/oauth2/callback', [GoogleDriveController::class, 'handleGoogleCallback']);
+Route::middleware([ResellerMiddleware::class])->group(function () {
+    Route::get('/favorite', [WishlistController::class, 'favorite'])->name('favorite');
+    Route::post('/favorite', [WishlistController::class, 'favoriteStore'])->name('favorite.store');
+    Route::delete('/favorite/{id}', [WishlistController::class, 'favoriteDestroy'])->name('favorite.destroy');
+    Route::post('prouct/cart', [CartController::class, 'handleCartOrBuy'])->name('product.handleAction');
+    Route::get('/cart', [CartController::class, 'cart'])->name('cart');
+    Route::delete('/cart/{id}', [CartController::class, 'cartDestroy'])->name('cart.destroy');
+    Route::resource('address', AddressController::class);
+    Route::get('/order-history', [ResellerController::class, 'orderHistory'])->name('order.history');
+    Route::prefix('checkout')->group(function () {
+        Route::post('/choose-address', [PaymentController::class, 'chooseAddress'])->name('checkout.chooseAddress');
+        Route::post('/', [PaymentController::class, 'checkout'])->name('checkout');
+        Route::post('/confirm', [PaymentController::class, 'checkoutConfirm'])->name('checkout.confirm');
+    });
+    Route::post('/review', [ReviewController::class, 'review'])->name('review');
 
-/*
-|--------------------------------------------------------------------------
-| (Optional) Protect admin routes with AdminMiddleware
-|--------------------------------------------------------------------------
-*/
-// Route::middleware([AdminMiddleware::class])->group(function () {
-//     Route::get('/admin/dashboard', function () {
-//         return view('admin.dashboard');
-//     });
-// });
+    Route::get('/payment/{order_code}', [PaymentController::class, 'payment'])->name('payment');
+    Route::post('/payment/{order_code}/confirm', [PaymentController::class, 'paymentConfirm'])->name('payment.confirm');
+
+    Route::get('/profil', function () {
+        return view('profile');
+    })->name('profile');
+    Route::post('/profile/edit', [ResellerController::class, 'updateProfile'])->name('profile.update');
+    Route::get('/profile/change-email/{name}/{new_email}/{old_email}', [ResellerController::class, 'changeEmailReseller'])->name('change.email.reseller');
+
+    Route::get('/api/addresses', [AddressController::class, 'getAddresses'])->name('api.addresses');
+
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/', [DashboardResellerController::class, 'index'])->name('dashboard.reseller');
+        Route::get('/course', [CourseController::class, 'groupVideoIndex'])->name('reseller.course');
+        Route::get('/course/{id}/video', [CourseController::class, 'videoIndex'])->name('reseller.course.video');
+        Route::get('/course/{id}/video/{video_id}', [CourseController::class, 'videoShow'])->name('reseller.course.video.show');
+    });
+
+    Route::get('/upgrade-account', [ResellerController::class, 'showUpgradeAccount'])->name('upgrade.account');
+    Route::get('/check-discount/{code}', [DiscountController::class, 'check'])->name('check.discount');
+    Route::post('/upgrade-account', [ResellerController::class, 'upgradeAccount'])->name('upgrade.account.post');
+});

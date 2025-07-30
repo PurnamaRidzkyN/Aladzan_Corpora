@@ -25,6 +25,7 @@ class CreateUsersAndAuthTokensTable extends Migration
             $table->string('email')->unique();
             $table->string('phone')->unique();
             $table->string('pfp_path');
+            $table->unsignedTinyInteger('plan_type')->default(0); 
             $table->string('password');
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();

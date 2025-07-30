@@ -26,7 +26,7 @@
 </head>
 
 
-<body class="bg-gray-50 font-sans " x-data="{ open: false, openUser: false, openKategori: false }">
+<body class="bg-sky-50 text-gray-800  font-sans " x-data="{ open: false, openUser: false, openKategori: false }">
     <!-- 🔼 Navbar Atas -->
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
@@ -84,11 +84,8 @@
                             </svg>
                         @elseif(auth()->check())
                             {{-- Reseller Profile --}}
-                            @php
-                                $pfp = auth()->user()->pfp_path ?? 'default.png';
-                                $isExternal = Str::startsWith($pfp, 'http');
-                            @endphp
-                            <img src="{{ $isExternal ? $pfp : asset('storage/' . $pfp) }}" alt="Profil"
+                            
+                            <img src="{{ cloudinary_url(auth()->user()->pfp_path) }}" alt="Profil"
                                 class="w-full h-full object-cover rounded-full">
                         @else
                             {{-- Belum login --}}
@@ -170,13 +167,8 @@
                 </a>
             @elseif(auth()->check())
                 {{-- Kalau reseller login --}}
-                @php
-                    $pfp = auth()->user()->pfp_path ?? 'default.png';
-                    $isExternal = Str::startsWith($pfp, 'http');
-                @endphp
-
                 <a href="/profil" class="flex flex-col items-center hover:text-blue-600">
-                    <img src="{{ $isExternal ? $pfp : asset('storage/' . $pfp) }}"
+                    <img src="{{ cloudinary_url(auth()->user()->pfp_path) }}"
                         class="h-5 w-5 mb-1 rounded-full object-cover" alt="Profil">
                     <span>Profil</span>
                 </a>
@@ -197,7 +189,7 @@
 
 
     {{-- Konten halaman --}}
-    <div class="pb-24">
+    <div class=" p-10" >
         @if (session('success'))
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
                 class="mx-auto max-w-md mb-4  
@@ -294,5 +286,20 @@
 
 
 </body>
+{{-- <script>
+  // Blok klik kanan
+  document.addEventListener('contextmenu', event => event.preventDefault());
+
+  // Blok F12, Ctrl+Shift+I, Ctrl+U
+  document.addEventListener('keydown', function(e) {
+    if (
+      e.key === 'F12' ||
+      (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'J')) ||
+      (e.ctrlKey && e.key === 'U')
+    ) {
+      e.preventDefault();
+    }
+  });
+</script> --}}
 
 </html>

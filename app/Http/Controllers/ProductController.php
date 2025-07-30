@@ -2,16 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Google_Client;
 use App\Models\Shop;
 use App\Models\Product;
 use App\Models\Category;
-use Google_Service_Drive;
 use Illuminate\Support\Str;
 
 use App\Models\ProductMedia;
 use Illuminate\Http\Request;
-use Google_Service_Drive_Permission;
 use Illuminate\Support\Facades\Storage;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
@@ -33,6 +30,7 @@ class ProductController extends Controller
             'name' => 'required|string',
             'categories' => 'nullable|array',
             'description' => 'nullable|string',
+            'weight' => 'nullable|integer',
             'shop_id' => 'required|exists:shops,id',
         ]);
 
@@ -43,7 +41,7 @@ class ProductController extends Controller
         }
 
         // 4. Simpan File
-        $folderName = 'S' . $data['shop_id'] . '/P' . $product->id;
+        $folderName = 'P'.'/S' . $data['shop_id'] . '/P' . $product->id;
 
         if ($request->hasFile('media')) {
             $mediaMap = [];
@@ -89,6 +87,7 @@ class ProductController extends Controller
             'name' => 'required|string',
             'categories' => 'nullable|array',
             'description' => 'nullable|string',
+            'weight' => 'nullable|integer',
             'shop_id' => 'required|exists:shops,id',
         ]);
         $product = Product::findOrFail($id);
@@ -98,7 +97,7 @@ class ProductController extends Controller
             $product->categories()->sync($request->categories);
         }
 
-        $folderName = 'S' . $data['shop_id'] . '/P' . $product->id;
+        $folderName = 'P' . '/S' . $data['shop_id'] . '/P' . $product->id;
 
         // Hapus media
         if ($request->has('deleted_media')) {

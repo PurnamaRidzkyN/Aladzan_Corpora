@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
@@ -9,56 +10,41 @@ class OrderController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function currentOrders()
     {
-        return view('admin.order.current_orders.index');
+        $orders = Order::with('orderItems')->get();
+        return view('admin.order.current_orders', compact('orders'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function changeStatus(Request $request)
     {
-        //
+        $request->validate([
+            'order_id' => 'required|integer',
+            'status' => 'required|integer',
+        ]);
+        $order = Order::findOrFail($request->order_id);
+        switch ($request->status) {
+            case 1:
+                $order->is_processed_at = now();
+                break;
+            case 2:
+                $order->is_shipped_at = now();
+                break;
+            case 3:
+                $order->is_done_at = now();
+                break;
+            case 4:
+                $order->is_cancelled_at = now();
+                break;
+        }
+        $order->update([
+            'status' => $request->status,
+        ]);
+        return back()->with('success', 'Status order berhasil diubah.');
     }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function history_orders()
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        $orders = Order::with('orderItems')->get();
+        return view('admin.order.history_orders', compact('orders'));
     }
 }

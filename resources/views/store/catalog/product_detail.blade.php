@@ -3,8 +3,8 @@
 @section('title', 'Beranda')
 
 @section('content')
-    <!-- Produk Utama --><!-- Swiper CSS -->
-
+    <!-- Produk Utama -->
+    <!-- Swiper CSS -->
     <main class="max-w-6xl mx-auto p-6 grid grid-cols-1 md:grid-cols-2 gap-10 mt-10">
         <!-- Gambar Produk -->
         <div>
@@ -12,24 +12,24 @@
                 <div class="swiper mySwiper w-full rounded-xl overflow-hidden">
                     <div class="swiper-wrapper">
                         @foreach ($product->media as $item)
-    @php
-        $isImage = $item->file_type == 'image';
-        $src = cloudinary_url($item->file_path, $item->file_type);
-    @endphp
+                            @php
+                                $isImage = $item->file_type == 'image';
+                                $src = cloudinary_url($item->file_path, $item->file_type);
+                            @endphp
 
-    <div class="swiper-slide">
-        @if ($isImage)
-            <img src="{{ $src }}" alt="{{ $item->original_name }}"
-                 class="w-full h-[400px] object-contain cursor-pointer bg-white"
-                 @click="preview = '{{ $src }}'; type = 'image'">
-        @else
-            <video class="w-full h-[400px] object-contain bg-black cursor-pointer" controls
-                   @click="preview = '{{ $src }}'; type = 'video'">
-                <source src="{{ $src }}" type="video/mp4">
-            </video>
-        @endif
-    </div>
-@endforeach
+                            <div class="swiper-slide">
+                                @if ($isImage)
+                                    <img src="{{ $src }}" alt="{{ $item->original_name }}"
+                                        class="w-full h-[400px] object-contain cursor-pointer bg-black"
+                                        @click="preview = '{{ $src }}'; type = 'image'">
+                                @else
+                                    <video class="w-full h-[400px] object-contain bg-black cursor-pointer" controls
+                                        @click="preview = '{{ $src }}'; type = 'video'">
+                                        <source src="{{ $src }}" type="video/mp4">
+                                    </video>
+                                @endif
+                            </div>
+                        @endforeach
 
                     </div>
 
@@ -128,8 +128,6 @@
                 </div>
                 <a href="{{ route('shop.show', $product->shop->slug) }}"
                     class="flex items-center gap-2 hover:bg-gray-100 px-3 py-1 rounded-lg transition">
-                    <img src="{{ $product->shop->logo_url ?? 'https://via.placeholder.com/40x40.png?text=Toko' }}"
-                        class="w-8 h-8 rounded-full object-cover border" />
                     <div>
                         <p class="text-sm font-semibold text-gray-800 leading-4">{{ $product->shop->name }}</p>
                         <p class="text-xs text-gray-500">Lihat toko</p>
@@ -179,7 +177,7 @@
                 <!-- Modal -->
                 <input type="checkbox" id="modal_keranjang" class="modal-toggle" />
                 <div class="modal">
-                    <div class="modal-box max-w-md w-full p-6 rounded-xl" >
+                    <div class="modal-box max-w-md w-full p-6 rounded-xl">
                         <!-- Header -->
                         <div class="flex justify-between items-start mb-4">
                             <div>
@@ -250,7 +248,7 @@
                 <input type="hidden" name="product_id" value="{{ $product->id }}">
 
                 <button type="submit"
-                    class="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm px-6 py-2 rounded-xl w-full flex items-center justify-center gap-2 transition duration-200">
+                    class="btn-gradient-neutral w-full mt-2 flex items-center justify-center gap-2 rounded-xl">
                     <i class="fa-regular fa-heart text-base"></i> Simpan Produk Ini
                 </button>
             </form>
@@ -286,7 +284,7 @@
             <div class="text-sm text-gray-500">Dari {{ $rating->rating_count ?? 0 }} ulasan</div>
         </div>
         <div class="space-y-6">
-            @forelse($product->reviews as $review)
+            @forelse($product->review as $review)
                 <div class="bg-white p-5 rounded-xl shadow-sm border">
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
@@ -348,7 +346,7 @@
     <!-- Modal DaisyUI -->
     <input type="checkbox" id="modal_review" class="modal-toggle" />
     <div class="modal">
-        <div class="modal-box w-full max-w-2xl max-h-[90vh] overflow-y-auto relative" x-data="{ selectedStar: 0 }">
+        <div class="modal-box w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-2xl shadow-xl p-6" x-data="{ selectedStar: 0 }">
 
             <!-- Tombol X -->
             <label for="modal_review" class="btn btn-sm btn-circle absolute right-3 top-3">✕</label>
@@ -377,7 +375,7 @@
                     class="btn btn-sm">Semua</button>
                 @foreach ([5, 4, 3, 2, 1] as $star)
                     <button @click="selectedStar = {{ $star }}"
-                        :class="selectedStar === {{ $star }} ? 'btn-primary' : 'btn-outline'"
+:class="selectedStar === {{ $star }} ? 'btn-gradient-primary' : 'btn-gradient-neutral'"
                         class="btn btn-sm flex items-center gap-1">
                         @for ($i = 0; $i < $star; $i++)
                             <svg class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
@@ -390,7 +388,7 @@
             </div>
 
             <!-- List Review -->
-            @foreach ($product->reviews as $review)
+            @foreach ($product->review as $review)
                 <div x-show="selectedStar === 0 || selectedStar === {{ $review->rating }}"
                     class="bg-white p-4 rounded-xl shadow-sm border mb-4">
                     <div class="flex items-center justify-between mb-2">
@@ -516,8 +514,7 @@
                 }
             };
         }
-
-</script>
+    </script>
 
 
 

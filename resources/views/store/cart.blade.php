@@ -2,15 +2,15 @@
 @section('title', 'Keranjang Belanja')
 
 @section('content')
-    <div class="container mx-auto px-4 py-6 pb-32">
+    <div class=" mx-auto px-4 md:px-6 py-6 pb-32"x-data="{ deleteId: null }">
         <h1 class="text-2xl font-bold text-primary mb-6">Keranjang Belanja</h1>
 
-        <form id="cartForm" method="POST" action="}">
+        <form id="cartForm" method="POST" action="{{ route('checkout.chooseAddress') }}">
             @csrf
             <input type="hidden" name="items_json" id="itemsJson">
 
-            <div class="space-y-6">
-                @foreach ($cartItems as $storeName => $items)
+            <div class="space-y-6 pb-40"> {{-- Tambahan padding bawah agar tidak nempel checkout bar --}}
+                @forelse ($cartItems as $storeName => $items)
                     <div class="bg-white border shadow rounded-xl p-4">
                         <h2 class="text-lg font-bold text-primary mb-4">{{ $storeName }}</h2>
                         <div class="space-y-4">
@@ -22,8 +22,9 @@
                                                 name="selected_items[]" value="{{ $item->id }}"
                                                 data-price="{{ $item->variant->price * $item->quantity }}"
                                                 data-qty="{{ $item->quantity }}">
-                                            <img src="{{ cloudinary_url($item->variant->media->file_path) }}"
-                                                class="w-20 h-20 object-cover rounded-lg">
+                                            <img src="{{ $item->variant->media?->file_path ? cloudinary_url($item->variant->media->file_path) : 'https://placehold.co/150x100?text=No+Media' }}"
+                                                alt="Gambar Produk" class="w-20 h-20 object-cover rounded-lg" />
+
                                             <div class="text-sm sm:text-base">
                                                 <a href="{{ route('product.show', $item->variant->product->slug) }}"
                                                     class="no-underline hover:underline">
@@ -42,24 +43,38 @@
                                             </div>
                                         </div>
 
-                                        <form method="POST" action="}">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-sm btn-error ml-auto">Hapus</button>
-                                        </form>
+                                        <button for="delete-modal" class="btn btn-gradient-error btn-xs"
+                                            @click="deleteId = {{ $item->id }}; cart_modal.showModal()">
+                                            Hapus
+                                        </button>
+
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     </div>
-                @endforeach
+                @empty
+                    <div class="w-full">
+                        <div
+                            class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-xl">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                    d="M3 3h2l.4 2M6 6h15l-1.5 9h-13zM6 6l-1.5-3M10 21a1 1 0 100-2 1 1 0 000 2zM18 21a1 1 0 100-2 1 1 0 000 2z" />
+                            </svg>
+                            <p class="text-sm text-gray-500 text-center">Keranjang kamu masih kosong. Silakan tambahkan
+                                produk terlebih dahulu.</p>
+                        </div>
+                    </div>
+                @endforelse
             </div>
 
+
             <!-- ✅ Mobile Checkout Bar -->
-            <div class="fixed bottom-16 left-0 right-0 bg-white border-t shadow p-4 z-40 md:hidden">
+            <div class="fixed bottom-16 left-0 right-0 bg-white border-t shadow-md p-4 z-40 md:hidden">
                 <div class="flex flex-col md:flex-row justify-between items-center gap-4">
-                    <div class="text-lg font-semibold">
-                        Total Dipilih: <span id="totalHarga">Rp0</span>
+                    <div class="text-lg font-semibold text-gray-700">
+                        Total Dipilih: <span id="totalHarga" class="text-primary font-bold">Rp0</span>
                     </div>
                     <button type="submit" class="btn btn-primary w-full md:w-auto">Lanjut ke Checkout</button>
                 </div>
@@ -68,14 +83,42 @@
             <!-- ✅ Desktop Checkout Bar -->
             <div class="hidden md:block fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 z-50">
                 <div class="flex justify-between items-center max-w-5xl mx-auto">
-                    <div class="text-lg font-semibold">
-                        Total Dipilih: <span id="totalHargaDesktop">Rp0</span>
+                    <div class="text-lg font-semibold text-gray-700">
+                        Total Dipilih: <span id="totalHargaDesktop" class="text-primary font-bold">Rp0</span>
                     </div>
-                    <button type="submit" class="btn btn-primary">Lanjut ke Checkout</button>
+                    <button type="submit" class="btn btn-primary px-6 py-2 text-base">Lanjut ke Checkout</button>
                 </div>
             </div>
         </form>
+        <dialog id="cart_modal" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg">Konfirmasi</h3>
+                <p class="py-4">Yakin ingin menghapus item ini?</p>
+                <div class="modal-action">
+                    <form method="dialog">
+                        <button class="btn">Batal</button>
+                    </form>
+                    <!-- Form untuk delete -->
+                    <form method="POST" :action="`/cart/${deleteId}`" @submit.prevent="$event.target.submit()">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-error">Hapus</button>
+                    </form>
+                </div>
+            </div>
+        </dialog>
     </div>
+
+
+
+    <script>
+        function openDeleteModal(itemId) {
+            const deleteForm = document.getElementById('deleteForm');
+            deleteForm.action = `/cart/${itemId}`;
+
+            document.getElementById('delete-modal').checked = true;
+        }
+    </script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {

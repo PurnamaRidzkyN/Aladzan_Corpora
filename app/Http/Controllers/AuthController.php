@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Laravel\Socialite\Facades\Socialite;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class AuthController extends Controller
 {
@@ -33,7 +34,7 @@ class AuthController extends Controller
 
         if ($admin && Hash::check($request->password, $admin->password)) {
             Auth::guard('admin')->login($admin, $remember);
-            return redirect()->intended('/dashboard');
+            return redirect()->intended('/staff-only/dashboard');
         }
 
         return back()->withErrors([
@@ -217,23 +218,44 @@ class AuthController extends Controller
                 'email' => 'required|email|unique:resellers,email',
                 'phone' => 'required|string|max:15|unique:resellers,phone',
             ]);
-            $googleUser = session('google_user_data');
-            // Ambil data tambahan dari session atau request
-            $pfp = $googleUser['pfp_path'] ?? 'default.png';
-            $googleId = $googleUser['google_id'];
-            $googleId = $request->google_id;
 
-            $user = Reseller::create([
+            $googleUser = session('google_user_data');
+
+            $pfpUrl = $googleUser['pfp_path'] ?? null;
+            $googleId = $googleUser['google_id'] ?? null;
+
+            $cloudinaryUrl = 'default.png';
+
+            if ($pfpUrl) {
+                $tmpFile = tempnam(sys_get_temp_dir(), 'avatar_');
+                file_put_contents($tmpFile, file_get_contents($pfpUrl));
+
+                $uploadResult = Cloudinary::upload($tmpFile, [
+                    'public_id' => 'Profile/R-' . auth()->id(),
+                    'folder' => 'Profile',
+                    'overwrite' => true,
+                ]);
+                $pfp = $uploadResult['public_id'];
+            }
+
+            // Validasi form dari request (misal)
+            $validated = $request->validate([
+                'name' => 'required|string|max:255',
+                'email' => 'required|email|unique:resellers,email',
+                'phone' => 'required|string|max:20',
+            ]);
+
+            // Simpan data reseller ke database
+            $reseller = Reseller::create([
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'google_id' => $googleId,
                 'pfp_path' => $pfp,
-                'password' => $googleId,
-                // Tidak perlu password karena akun Google
+                'password' => bcrypt($googleId),
             ]);
 
-            Auth::login($user);
+            Auth::login($reseller);
             session()->forget('google_user_data');
 
             return redirect('/home');
@@ -250,9 +272,9 @@ class AuthController extends Controller
                 'password' => Hash::make($validated['password']),
                 'phone' => $validated['phone'],
             ];
-        }
+        
 
-        $url = URL::temporarySignedRoute('register.verify', now()->addMinutes(30), $temp);
+        $url = URL::temporarySignedRoute('register.verify', now()->addMinutes(5), $temp);
 
         Mail::send(
             'email.verify_email',
@@ -266,6 +288,7 @@ class AuthController extends Controller
         );
 
         return back()->with('success', 'Link verifikasi telah dikirim ke email Anda.');
+    }
     }
 
     public function verifyLink(Request $request)
@@ -293,7 +316,7 @@ class AuthController extends Controller
 
     public function showChangePassword()
     {
-        $layout = Auth::guard('reseller')->check() ? 'layouts.dashboard' : 'layouts.app';
+        $layout = Auth::guard('reseller')->check() ? 'layouts.app' : 'layouts.dashboard';
 
         return view('auth.change_password', compact('layout'));
     }

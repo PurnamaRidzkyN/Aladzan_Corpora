@@ -1,6 +1,12 @@
 @extends('layouts.dashboard')
 @section('title', 'Kategori Produk')
-
+@php
+    $title = 'Kategori Produk';
+    $breadcrumb = [
+        ['label' => 'Manajemen Produk'],
+        ['label' => 'Kategori Produk'],
+    ];
+@endphp
 @section('content')
     <section class="w-full lg:px-12 mt-8">
         <div class="card bg-white shadow-md rounded-xl border border-soft">
@@ -8,8 +14,8 @@
 
                 <!-- Header -->
                 <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-2xl font-bold text-primary">Kategori Produk</h2>
-                    <label for="modal_kategori" class="btn btn-sm text-white btn-gradient-primary border-none">
+                    <h2 class="text-2xl font-bold text-primary">Kategori</h2>
+                    <label for="modal_kategori" class="btn btn-sm btn-gradient-primary border-none">
                         + Tambah Kategori
                     </label>
                 </div>
@@ -50,7 +56,7 @@
                                                         <button class="btn btn-gradient-error">Ya, Hapus</button>
                                                     </form>
                                                     <label for="delete-modal-{{ $category->id }}"
-                                                        class="btn">Batal</label>
+                                                        class="btn  btn-gradient-neutral">Batal</label>
                                                 </div>
                                             </div>
                                         </div>
@@ -84,7 +90,7 @@
                 <input type="text" name="name" placeholder="Nama kategori" class="input input-bordered w-full"
                     required>
                 <div class="modal-action">
-                    <label for="modal_kategori" class="btn">Batal</label>
+                    <label for="modal_kategori" class="btn  btn-gradient-neutral">Batal</label>
                     <button type="submit" class="btn btn-gradient-primary">Simpan</button>
                 </div>
             </form>

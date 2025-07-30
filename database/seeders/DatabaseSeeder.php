@@ -7,6 +7,7 @@ use App\Models\Admin;
 use App\Models\Rating;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Address;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\Reseller;
@@ -29,27 +30,51 @@ class DatabaseSeeder extends Seeder
         ]);
         Reseller::create([
             'name' => 'Contoh Reseller',
-            'email' => 'reseller@gmail.com',
+            'email' => 'himadatsuki@gmail.com',
             'password' => bcrypt('password123'),
             'pfp_path' => 'default.png',
             'phone' => '081234567890',
             'email_verified_at' => now(),
         ]);
 
-        // 1. Shops
         // 1. Buat Toko
         $shop = Shop::create([
             'name' => 'Toko Andalan',
             'description' => 'Toko terpercaya dengan berbagai produk unggulan.',
+            'zipcode' => '40973',
+            'city' => 'Bandung',
+            'sub_district_id' => '5087',
         ]);
 
         // 2. Produk tanpa harga langsung
-        $productData = [['name' => 'Baju Katun', 'variants' => [['name' => 'M', 'price' => 120000], ['name' => 'L', 'price' => 125000]]], ['name' => 'Celana Jeans', 'variants' => [['name' => '32', 'price' => 180000], ['name' => '34', 'price' => 185000]]], ['name' => 'Sepatu Sneakers', 'variants' => [['name' => '40', 'price' => 250000], ['name' => '42', 'price' => 255000]]], ['name' => 'Topi Keren', 'variants' => [['name' => 'Hitam', 'price' => 80000]]], ['name' => 'Tas Ransel', 'variants' => [['name' => 'Biru', 'price' => 200000]]]];
+        $productData = [
+            [
+                'name' => 'Baju Katun',
+                'variants' => [['name' => 'M', 'price' => 120000], ['name' => 'L', 'price' => 125000]], 'weight' =>12
+            ],
+            [
+                'name' => 'Celana Jeans',
+                'variants' => [['name' => '32', 'price' => 180000], ['name' => '34', 'price' => 185000]], 'weight' =>12
+            ],
+            [
+                'name' => 'Sepatu Sneakers',
+                'variants' => [['name' => '40', 'price' => 250000], ['name' => '42', 'price' => 255000]], 'weight' =>12
+            ],
+            [
+                'name' => 'Topi Keren',
+                'variants' => [['name' => 'Hitam', 'price' => 80000]], 'weight' =>12
+            ],
+            [
+                'name' => 'Tas Ransel',
+                'variants' => [['name' => 'Biru', 'price' => 200000]], 'weight' =>12
+            ],
+        ];
 
         $products = collect($productData)->map(function ($item) use ($shop) {
             $product = Product::create([
                 'name' => $item['name'],
                 'description' => 'Deskripsi produk ' . $item['name'],
+                'weight' => $item['weight'],
                 'shop_id' => $shop->id,
             ]);
 
@@ -84,5 +109,20 @@ class DatabaseSeeder extends Seeder
                 'comment' => 'Produk bagus dan sesuai harapan!',
             ]);
         }
+        Address::create([
+            'reseller_id' => 1,
+            'recipient_name' => 'Andi Wijaya',
+            'phone_number' => '081234567890',
+            'province' => 'Jawa Barat',
+            'city' => 'Bandung',
+            'district' => 'Ciwidey',
+            'sub_district' => 'Ciwidey',
+            'neighborhood' => 'RT 02',
+            'hamlet' => 'RW 01',
+            'village' => 'Kampung Hijau',
+            'zipcode' => '40973',
+            'address_detail' => 'Jl. kehutanan',
+            'sub_district_id' => '5087',
+        ]);
     }
 }

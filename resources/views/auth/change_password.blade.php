@@ -11,7 +11,7 @@
             </ul>
         </div>
     @endif
-    <div class="flex items-center justify-center min-h-screen bg-gray-100">
+    <div class="flex items-center justify-center min-h-screen">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
             <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Ubah kata sandi </h2>
 
@@ -68,20 +68,20 @@
             </div>
         </div>
     </div>
-        <script>
-            function togglePassword(inputId, iconId) {
-                const input = document.getElementById(inputId);
-                const icon = document.getElementById(iconId);
+    <script>
+        function togglePassword(inputId, iconId) {
+            const input = document.getElementById(inputId);
+            const icon = document.getElementById(iconId);
 
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.classList.remove('fa-eye');
-                    icon.classList.add('fa-eye-slash');
-                } else {
-                    input.type = 'password';
-                    icon.classList.remove('fa-eye-slash');
-                    icon.classList.add('fa-eye');
-                }
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
-        </script>
-    @endsection
+        }
+    </script>
+@endsection

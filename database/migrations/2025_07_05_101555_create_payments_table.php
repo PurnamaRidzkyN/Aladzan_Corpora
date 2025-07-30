@@ -7,15 +7,15 @@ class CreatePaymentsTable extends Migration
 {
     public function up()
     {
-        Schema::create('vouchers', function (Blueprint $table) {
+        Schema::create('discounts', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();
-            $table->enum('discount_type', ['percent', 'nominal']);
-            $table->decimal('discount_value', 12, 2);
-            $table->boolean('is_active');
-            $table->timestamp('valid_from');
-            $table->timestamp('valid_until');
+            $table->integer('amount'); 
+            $table->boolean('is_percent')->default(false);
+            $table->date('valid_until')->nullable();
+            $table->timestamps();
         });
+
         Schema::create('payments', function (Blueprint $table) {
             $table->id();
             $table->foreignId('reseller_id')->constrained()->onDelete('cascade');
@@ -23,7 +23,6 @@ class CreatePaymentsTable extends Migration
             $table->decimal('amount', 12, 2);
             $table->string('status');
             $table->string('payment_method');
-            $table->foreignId('voucher_id')->nullable()->constrained('vouchers')->nullOnDelete();
             $table->timestamps();
             $table->timestamp('paid_at')->nullable();
         });
@@ -54,7 +53,7 @@ class CreatePaymentsTable extends Migration
             $table->unsignedBigInteger('actor_id');
             $table->string('action');
             $table->text('description')->nullable();
-           $table->timestamps(); 
+            $table->timestamps();
         });
     }
 
@@ -63,6 +62,6 @@ class CreatePaymentsTable extends Migration
         Schema::dropIfExists('activity_logs');
         Schema::dropIfExists('xendit_webhook_logs');
         Schema::dropIfExists('withdrawals');
-        Schema::dropIfExists('vouchers');
+        Schema::dropIfExists('discounts');
     }
 }

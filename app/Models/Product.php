@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Product extends Model
 {
-    protected $fillable = ['name', 'description', 'shop_id'];
+    protected $fillable = ['name', 'description', 'shop_id','weight'];
 
     protected static function booted()
     {
@@ -42,7 +42,7 @@ class Product extends Model
     {
         return $this->hasMany(ProductMedia::class);
     }
-    public function reviews()
+    public function review()
     {
         return $this->hasMany(Rating::class);
     }

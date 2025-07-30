@@ -13,14 +13,18 @@
 
         <!-- Full Box: Toko -->
         <div
-            class="card bg-white shadow-md rounded-xl border border-soft p-6 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
-            <div>
-                <h2 class="text-2xl font-bold text-primary mb-1">{{ $shop->name }}</h2>
+            class="card bg-white shadow-md rounded-xl border border-soft p-6 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
+            <div class="space-y-2">
+                <h2 class="text-2xl font-bold text-primary">{{ $shop->name }}</h2>
                 <p class="text-sm text-gray-700 max-w-3xl">
                     {{ $shop->description }}
                 </p>
+                <p class="text-sm text-gray-600 flex items-center gap-1">
+
+                    Kota/Kabupaten: <span class="font-medium">{{ $shop->city }}</span>
+                </p>
             </div>
-            <label for="modal_edit_toko" class="btn btn-gradient-warning self-start lg:self-auto">Edit Toko</label>
+            <label for="modal_edit_toko" class="btn btn-gradient-warning whitespace-nowrap">Edit Toko</label>
         </div>
 
 
@@ -112,7 +116,7 @@
                             <div class="space-x-2">
                                 <button class="btn btn-gradient-warning btn-xs"
                                     @click="$store.productForm.openEdit(selected)">Edit</button>
-                                <label for="delete_product" class="btn btn-gradient-error btn-xs text-white"
+                                <label for="delete_product" class="btn btn-gradient-error btn-xs "
                                     @click="confirmDelete(selected.id, selected.name)">Hapus</label>
                             </div>
                         </div>
@@ -220,9 +224,10 @@
 
                         <!-- Tombol Ulasan -->
                         <div class="mt-auto">
-                            <a :href="'/produt/' + selected.id + '/ulasan'" class="btn btn-sm btn-outline w-full">
-                                Lihat Semua Ulasan (<span x-text="selected.reviews_count || 0"></span>)
+                            <a :href="'/staff-only/reviews/' + selected.slug" class="btn btn-sm btn-outline w-full">
+                                Lihat Semua Ulasan (<span x-text="selected.rating.rating_count || 0"></span>)
                             </a>
+
                         </div>
                     </div>
                 </template>
@@ -277,6 +282,15 @@
 
                         </div>
                     </div>
+                    <div class="flex items-center">
+                        <input type="text" name="weight" placeholder="Berat"
+                            class="input input-bordered w-full rounded-r-none"
+                            x-model="$store.productForm.formData.weight" required>
+                        <span class="px-3 py-2 bg-gray-200 text-gray-700 rounded-r-md border border-l-0 border-gray-300">
+                            g
+                        </span>
+                    </div>
+
 
                     <textarea name="description" placeholder="Deskripsi" class="textarea textarea-bordered w-full h-32 resize-none"
                         x-model="$store.productForm.formData.description"></textarea>
@@ -325,13 +339,13 @@
 
                                 <!-- Tampilkan yang sedang aktif saat edit -->
                                 <template x-if="$store.productForm.mode === 'edit' && variant.media_id">
-    <option :value="variant.media_id">
-        📌 Saat Ini:
-        <span
-            x-text="$store.productForm.mediaOptions.find(m => m.id == variant.media_id)?.name || 'Media tidak ditemukan'">
-        </span>
-    </option>
-</template>
+                                    <option :value="variant.media_id">
+                                        📌 Saat Ini:
+                                        <span
+                                            x-text="$store.productForm.mediaOptions.find(m => m.id == variant.media_id)?.name || 'Media tidak ditemukan'">
+                                        </span>
+                                    </option>
+                                </template>
 
 
                                 <!-- Daftar semua pilihan gambar/video -->
@@ -344,7 +358,7 @@
                             <!-- Tombol Hapus -->
                             <div class="text-right">
                                 <button type="button" @click="$store.productForm.formData.variants.splice(index, 1)"
-                                    class="btn btn-sm btn-error">Hapus</button>
+                                    class="btn btn-sm btn-gradient-error">Hapus</button>
                             </div>
                         </div>
                     </template>
@@ -357,7 +371,8 @@
 
                 <!-- Tombol Aksi -->
                 <div class="col-span-1 md:col-span-2 flex justify-end gap-2 pt-4 border-t mt-4">
-                    <label for="modal_produk" class="btn" @click="$store.productForm.resetForm()">Batal</label>
+                    <label for="modal_produk" class="btn  btn-gradient-neutral"
+                        @click="$store.productForm.resetForm()">Batal</label>
                     <button type="submit" class="btn btn-gradient-primary"
                         x-text="$store.productForm.mode === 'edit' ? 'Perbarui' : 'Simpan'"></button>
                 </div>
@@ -376,6 +391,7 @@
                     stock: '',
                     categories: [],
                     description: '',
+                    weight: '',
                 },
 
                 openAdd() {
@@ -386,6 +402,7 @@
                         stock: '',
                         categories: [],
                         description: '',
+                        weight: '',
                     };
 
                     document.getElementById('modal_produk').checked = true;
@@ -400,11 +417,12 @@
                         stock: product.stock,
                         categories: product.categories?.map(c => c.id) || [],
                         description: product.description || '',
+                        weight: product.weight || '',
                     };
 
                     this.formData.variants = (product.variants || []).map(variant => ({
                         ...variant,
-                        media_id: variant.product_media_id 
+                        media_id: variant.product_media_id
                     }));
 
 
@@ -425,7 +443,7 @@
                     window.deletedMediaIds = [];
                     window.selectedFiles = [];
 
-                   
+
                     syncMediaOptions();
 
                     renderFileList();
@@ -442,6 +460,7 @@
                         stock: '',
                         categories: [],
                         description: '',
+                        weight: '',
                     };
                 }
             });
@@ -459,13 +478,13 @@
             selectedFiles = selectedFiles.concat(inputFiles);
 
             // Update mediaOptions
-            const startIndex = Date.now(); 
+            const startIndex = Date.now();
             inputFiles.forEach((file, i) => {
                 Alpine.store('productForm').mediaOptions.push({
                     id: `${startIndex}_${i}`,
                     name: file.name,
                     type: file.type,
-                    file: file, 
+                    file: file,
                 });
             });
             syncMediaOptions();
@@ -571,7 +590,7 @@
 
                 const input = document.createElement('input');
                 input.type = 'file';
-                input.name = `media[${media.id}]`; 
+                input.name = `media[${media.id}]`;
                 input.files = dataTransfer.files;
                 input.hidden = true;
                 hiddenInputsContainer.appendChild(input);
@@ -596,7 +615,7 @@
             // Media lama (existing)
             (window.existingMedia || []).forEach((item) => {
                 newOptions.push({
-                    id: item.id, 
+                    id: item.id,
                     name: item.original_name,
                     type: item.file_type,
                 });
@@ -638,7 +657,7 @@
                     @csrf
                     @method('DELETE')
                     <button type="submit" class="btn btn-gradient-error">Ya, Hapus</button>
-                    <label for="delete_product" class="btn">Batal</label>
+                    <label for="delete_product" class="btn  btn-gradient-neutral">Batal</label>
                 </form>
             </div>
         </div>
@@ -686,12 +705,25 @@
                 @csrf
                 @method('PUT')
 
-                <input type="text" name="name" value="{{ old('name', $shop->name) }}"
-                    class="input input-bordered w-full" required>
-                <textarea name="description" rows="4" class="textarea textarea-bordered w-full" required>{{ old('description', $shop->description) }}</textarea>
+                <div class="mb-4">
+                    <label class="block mb-1 font-semibold text-sm text-gray-700">Nama Toko</label>
+                    <input type="text" name="name" value="{{ old('name', $shop->name) }}"
+                        class="input input-bordered w-full" required>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block mb-1 font-semibold text-sm text-gray-700">Deskripsi</label>
+                    <textarea name="description" rows="4" class="textarea textarea-bordered w-full" required>{{ old('description', $shop->description) }}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block mb-1 font-semibold text-sm text-gray-700">Kode Pos</label>
+                    <input type="text" name="zipcode" value="{{ old('zipcode', $shop->zipcode) }}"
+                        class="input input-bordered w-full" required>
+                </div>
 
                 <div class="modal-action">
-                    <label for="modal_edit_toko" class="btn">Batal</label>
+                    <label for="modal_edit_toko" class="btn  btn-gradient-neutral">Batal</label>
                     <button type="submit" class="btn btn-gradient-primary">Perbarui</button>
                 </div>
             </form>

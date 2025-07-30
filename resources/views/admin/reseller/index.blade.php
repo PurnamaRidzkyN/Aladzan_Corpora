@@ -107,7 +107,7 @@
                                             @method('DELETE')
                                             <button type="submit" class="btn btn-gradient-error">Ya, Hapus</button>
                                         </form>
-                                        <label for="delete-user-{{ $user['id'] }}" class="btn">Batal</label>
+                                        <label for="delete-user-{{ $user['id'] }}" class="btn btn-gradient-neutral">Batal</label>
                                     </div>
                                 </div>
                             </div>

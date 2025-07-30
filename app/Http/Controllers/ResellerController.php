@@ -3,209 +3,86 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
-use App\Models\Shop;
-use App\Models\Rating;
-use App\Models\Product;
-use App\Models\Category;
-use App\Models\Wishlist;
+use App\Models\Order;
+use App\Models\Reseller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Mail;
+use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ResellerController extends Controller
 {
-    public function ShowHome()
+   
+
+    public function orderHistory()
     {
-        $categories = Category::all();
-        $products = Product::with('media', 'shop', 'rating', 'variants')->get();
-        return view('home', compact('products', 'categories'));
+        $orders = Order::where('reseller_id', auth()->id())->with('orderItems.variant.product','rating')->get();
+        return view('store.profile.order_history', compact('orders'));
     }
-    public function showProduct($slug)
+    public function updateProfile(Request $request)
     {
-        $product = Product::with(['media', 'shop', 'rating', 'reviews', 'variants' => fn($q) => $q->latest()->take(5), 'reviews.reseller'])
-            ->where('slug', $slug)
-            ->firstOrFail();
-
-        $products = Product::with('media', 'shop', 'rating', 'variants')->get();
-
-        $rating = DB::table('rating_summary_view')->where('product_id', $product->id)->first();
-
-        return view('product_detail', compact('product', 'products', 'rating'));
-    }
-
-    public function search(Request $request)
-    {
-        $query = Product::with(['media', 'shop', 'rating', 'variants'])
-            ->leftJoin('rating_summary_view as rsv', 'products.id', '=', 'rsv.product_id')
-            ->select('products.*', 'rsv.rating as avg_rating', 'rsv.rating_count');
-
-        if ($request->filled('q')) {
-            $query->where('products.name', 'like', '%' . $request->q . '%');
-        }
-
-        switch ($request->sort) {
-            case 'terlaris':
-                $query->orderByDesc('sold');
-                break;
-            case 'rating':
-                $query->orderByDesc('rsv.rating');
-                break;
-            case 'harga_tertinggi':
-                $query->orderByDesc('price');
-                break;
-            case 'harga_terendah':
-                $query->orderBy('price');
-                break;
-            default:
-                $query->orderByDesc('products.created_at');
-                break;
-        }
-
-        $products = $query->paginate(12)->withQueryString();
-        $categories = Category::all();
-
-        return view('products', compact('products', 'categories'));
-    }
-    public function kategori(Request $request, $slug)
-    {
-        $query = Product::with(['media', 'shop', 'rating', 'variants'])
-            ->leftJoin('rating_summary_view as rsv', 'products.id', '=', 'rsv.product_id')
-            ->select('products.*', 'rsv.rating as avg_rating', 'rsv.rating_count');
-
-        $query->whereHas('categories', function ($q) use ($slug) {
-            $q->where('slug', $slug);
-        });
-
-        switch ($request->sort) {
-            case 'terlaris':
-                $query->orderByDesc('sold');
-                break;
-            case 'rating':
-                $query->orderByDesc('rsv.rating');
-                break;
-            case 'harga_tertinggi':
-                $query->orderByDesc('price');
-                break;
-            case 'harga_terendah':
-                $query->orderBy('price');
-                break;
-            default:
-                $query->orderByDesc('products.created_at');
-                break;
-        }
-
-        $products = $query->paginate(12)->withQueryString();
-        $categories = Category::all();
-
-        return view('products', compact('products', 'categories', 'slug'));
-    }
-    public function shop(Request $request, $slug)
-    {
-        $shop = Shop::where('slug', $slug)->firstOrFail();
-
-        // Ambil semua kategori yang dimiliki oleh produk dari toko ini
-        $categories = Category::whereHas('products', function ($query) use ($shop) {
-            $query->where('shop_id', $shop->id);
-        })->get();
-
-        // Query produk yang berasal dari toko ini
-        $query = Product::with(['media', 'rating', 'categories'])
-            ->where('shop_id', $shop->id)
-            ->leftJoin('rating_summary_view as rsv', 'products.id', '=', 'rsv.product_id')
-            ->select('products.*', 'rsv.rating as avg_rating', 'rsv.rating_count');
-
-        // Filter kategori jika ada
-        if ($request->filled('category')) {
-            $query->whereHas('categories', function ($q) use ($request) {
-                $q->where('slug', $request->category);
-            });
-        }
-
-        // Filter sorting
-        switch ($request->sort) {
-            case 'terlaris':
-                $query->orderByDesc('sold');
-                break;
-            case 'rating':
-                $query->orderByDesc('rsv.rating');
-                break;
-            case 'harga_tertinggi':
-                $query->orderByDesc('price');
-                break;
-            case 'harga_terendah':
-                $query->orderBy('price');
-                break;
-            default:
-                $query->orderByDesc('products.created_at');
-                break;
-        }
-
-        $products = $query->paginate(12)->withQueryString();
-
-        return view('shop', [
-            'shop' => $shop,
-            'products' => $products,
-            'categories' => $categories,
+        $request->validate([
+            'pfp' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
-    }
-    public function favorite()
-    {
-        $reseller = auth()->user();
-        $wishlists = $reseller->wishlists()->with('product', 'product.variants', 'product.rating', 'product.shop', 'product.media', 'product.categories')->paginate(12);
-        return view('wishlists', compact('wishlists'));
-    }
-    public function favoriteStore(Request $request)
-    {
-        $reseller = auth()->user();
 
-        // Cek apakah sudah ada
-        $exists = Wishlist::where('reseller_id', $reseller->id)->where('product_id', $request->product_id)->exists();
+        $user = Reseller::findOrFail(auth()->id());
+        if ($request->has('pfp')) {
+            $pfp = $request->pfp;
 
-        if (!$exists) {
-            Wishlist::create([
-                'reseller_id' => $reseller->id,
-                'product_id' => $request->product_id,
+            $uploadResult =Cloudinary::uploadApi()->upload($request->file('pfp')->getRealPath(), [
+          
+                'public_id' => 'Profile/R-' . auth()->id(),
+                'folder' => 'Profile',
+                'overwrite' => true,
+                'resource_type' => 'image',
             ]);
+            $pfp = $uploadResult['public_id'];
+            $user->pfp_path = $pfp;
         }
 
-        return back()->with('success', 'Produk ditambahkan ke wishlist.');
-    }
+        $user->name = $request->name;
+        $user->phone = $request->phone;
+        $user->save();
+        if ($request->email != $user->email) {
+            $temp = [
+                'name' => $request->name,
+                'new_email' => $request->email,
+                'old_email' => $user->email,
+            ];
+            $url = URL::temporarySignedRoute('change.email.reseller', now()->addMinutes(5), $temp);
 
-    public function favoriteDestroy($id)
-    {
-        $wishlist = Wishlist::findOrFail($id);
-        $wishlist->delete();
-        return back()->with('success', 'Produk dihapus dari wishlist.');
-    }
-    public function cart()
-    {
-        $userId = auth()->id();
-
-        $cartItems = Cart::with(['variant.media', 'variant.product.shop']) // Sesuaikan relasi
-            ->where('reseller_id', $userId)
-            ->get()
-            ->groupBy(fn($item) => $item->variant->product->shop->name ?? 'Toko Tidak Diketahui');
-        return view('cart', compact('cartItems'));
-    }
-
-    public function handleCartOrBuy(Request $request)
-    {
-        if ($request->action === 'cart') {
-            $validated = $request->validate([
-                'product_variant_id' => 'required|exists:product_variants,id',
-                'quantity' => 'required|integer|min:1',
-                'note' => 'nullable|string|max:255',
-            ]);
-
-            Cart::create([
-                'reseller_id' => auth()->id(),
-                'product_variant_id' => $validated['product_variant_id'],
-                'quantity' => $validated['quantity'],
-                'note' => $request->note,
-            ]);
-
-            return redirect()->back()->with('success', 'Produk berhasil ditambahkan ke keranjang!');
+            Mail::send(
+                'email.change_email',
+                [
+                    'url' => $url,
+                    'name' => $temp['name'],
+                    'old_email' => $temp['old_email'],
+                    'new_email' => $temp['new_email'],
+                ],
+                function ($message) use ($user) {
+                    $message->to($user->email)->subject('Konfirmasi Perubahan Email Anda');
+                },
+            );
+            return back()->with('verification', 'Untuk mengkonfirmasi perubahan email, silakan klik link yang sudah dikirim ke email Anda.');
         }
+        return back()->with('success', 'Informasi berhasil diubah.');
+    }
 
-        // Tambahan untuk "buy_now" bisa kamu isi nanti
+    public function changeEmailReseller(Request $request){
+        $user = Reseller::findOrFail(auth()->id());
+        $user->email = $request->new_email;
+        $user->save();
+        return redirect()->route('profile')->with('success', 'Email berhasil diubah.');
+    }
+
+    public function showUpgradeAccount(){
+        return view('store.profile.upgrade_account');
+    }
+
+    public function upgradeAccount(Request $request){
+        $user = Reseller::findOrFail(auth()->id());
+        $user->upgrade_account = $request->upgrade_account;
+        $user->save();
+        return redirect()->route('upgrade.account')->with('success', 'Upgrade Account berhasil diubah.');
     }
 }

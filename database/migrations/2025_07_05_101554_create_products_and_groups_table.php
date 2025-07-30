@@ -12,6 +12,9 @@ class CreateProductsAndGroupsTable extends Migration
             $table->string('name');
             $table->string('slug')->unique();
             $table->text('description')->nullable();
+            $table->integer('zipcode');
+            $table->string('city');
+            $table->string('sub_district_id');
             $table->timestamps();
         });
 
@@ -19,17 +22,9 @@ class CreateProductsAndGroupsTable extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->integer('sold')->default(0);
+            $table->string('weight')->nullable();
             $table->foreignId('shop_id')->constrained('shops')->onDelete('cascade');
             $table->string('slug')->unique();
-            $table->timestamps();
-        });
-        Schema::create('ratings', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->foreignId('reseller_id')->constrained()->onDelete('cascade'); // opsional: jika rating diberikan oleh user
-            $table->tinyInteger('rating')->unsigned();
-            $table->text('comment')->nullable();
             $table->timestamps();
         });
         Schema::create('product_media', function (Blueprint $table) {
@@ -53,10 +48,10 @@ class CreateProductsAndGroupsTable extends Migration
             $table->foreignId('category_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
-         Schema::create('product_variants', function (Blueprint $table) {
+        Schema::create('product_variants', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained()->onDelete('cascade');
-            $table->string('name'); 
+            $table->string('name');
             $table->integer('price');
             $table->foreignId('product_media_id')->nullable()->constrained('product_media')->onDelete('cascade');
             $table->timestamps();
@@ -68,10 +63,8 @@ class CreateProductsAndGroupsTable extends Migration
         Schema::dropIfExists('products');
         Schema::dropIfExists('category_products');
         Schema::dropIfExists('shops');
-        Schema::dropIfExists('ratings');
         Schema::dropIfExists('product_media');
         Schema::dropIfExists('categories');
         Schema::dropIfExists('product_variants');
-
     }
 }
