@@ -11,15 +11,20 @@
             <div x-data="{ preview: null, type: null }">
                 <div class="swiper mySwiper w-full rounded-xl overflow-hidden">
                     <div class="swiper-wrapper">
-                        @foreach ($product->media as $item)
+                        @forelse ($product->media as $item)
                             @php
-                                $isImage = $item->file_type == 'image';
-                                $src = cloudinary_url($item->file_path, $item->file_type);
+                                $isImage = $item->file_type === 'image';
+                                $filePath = $item->file_path ?: 'productDefault_mpgglw';
+                                $src = cloudinary_url(
+                                    $filePath,
+                                    $isImage ? 'image' : 'video',
+                                    'w_800,h_800,c_fit,q_auto,f_auto',
+                                );
                             @endphp
 
                             <div class="swiper-slide">
                                 @if ($isImage)
-                                    <img src="{{ $src }}" alt="{{ $item->original_name }}"
+                                    <img src="{{ $src }}" alt="{{ $item->original_name ?? 'Produk' }}"
                                         class="w-full h-[400px] object-contain cursor-pointer bg-black"
                                         @click="preview = '{{ $src }}'; type = 'image'">
                                 @else
@@ -29,7 +34,14 @@
                                     </video>
                                 @endif
                             </div>
-                        @endforeach
+                        @empty
+                            {{-- Jika tidak ada media, tampilkan gambar default --}}
+                            <div class="swiper-slide">
+                                <img src="{{ cloudinary_url('productDefault_mpgglw', 'image', 'w_800,h_800,c_fit,q_auto,f_auto') }}"
+                                    alt="No Product" class="w-full h-[400px] object-contain cursor-pointer bg-gray-100">
+                            </div>
+                        @endforelse
+
 
                     </div>
 
@@ -79,40 +91,133 @@
 
 
             <div class="mt-4 flex gap-4 items-center">
-                <a href="{{ $product->media->first()?->image_url ?? '#' }}" download
-                    class="bg-gray-200 text-sm px-4 py-2 rounded-xl hover:bg-gray-300">
-                    <i class="fa-solid fa-download mr-1"></i> Unduh Gambar
-                </a>
-                @php
-                    $url = route('product.show', $product->slug);
-                    $text =
-                        "📦 Produk: {$product->name}\n" .
-                        '💰 Harga: Rp ' .
-                        number_format($product->price, 0, ',', '.') .
-                        "\n" .
-                        '🏪 Toko: ' .
-                        ($product->shop->name ?? '-') .
-                        "\n" .
-                        '📄 Deskripsi: ' .
-                        strip_tags(Str::limit($product->description, 150)) .
-                        "\n" .
-                        "📷 Lihat produk: $url";
+                <!-- Tombol -->
+                <div x-data="assetModal()" class="inline-block">
+                    <!-- Tombol Unduh -->
+                    <button @click="openModal()"
+                        class="bg-gray-200 text-sm px-4 py-2 rounded-xl hover:bg-gray-300 disabled:opacity-50"
+                        :disabled="mediaCount === 0">
+                        <i class="fa-solid fa-download mr-1"></i>
+                        <span x-text="mediaCount === 0 ? 'Tidak Ada Aset' : 'Unduh Aset'"></span>
+                    </button>
 
-                    $waLink = 'https://wa.me/?text=' . urlencode($text);
-                    $fbLink = 'https://www.facebook.com/sharer/sharer.php?u=' . urlencode($url);
-                @endphp
+                    <!-- Modal Pilih Aset -->
+                    <template x-if="openAssetModal">
+                        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                            <div
+                                class="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden transform transition-all">
 
-                <div class="flex gap-3 mt-4">
-                    <a href="{{ $waLink }}" target="_blank" class="text-green-500 text-xl hover:scale-110"
-                        title="Bagikan ke WhatsApp">
-                        <i class="fab fa-whatsapp"></i>
-                    </a>
+                                <!-- Header Modal -->
+                                <div class="flex justify-between items-center px-6 py-4 border-b">
+                                    <h2 class="text-lg font-semibold">Unduh Aset Produk</h2>
+                                    <button @click="openAssetModal=false" class="text-gray-500 hover:text-gray-700">
+                                        ✖
+                                    </button>
+                                </div>
 
-                    <a href="{{ $fbLink }}" target="_blank" class="text-blue-600 text-xl hover:scale-110"
-                        title="Bagikan ke Facebook">
-                        <i class="fab fa-facebook"></i>
-                    </a>
+                                <!-- Deskripsi Produk -->
+                                <div class="px-6 py-4 border-b">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <p class="text-gray-700 text-sm whitespace-pre-line">
+                                                {{ $product->description ?? 'Tidak ada deskripsi' }}
+                                            </p>
+                                        </div>
+                                        <button @click="copyDescription('{{ addslashes($product->description) }}')"
+                                            class="ml-3 text-xs px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded border text-gray-600">
+                                            <i class="fa-solid fa-copy mr-1"></i> Salin
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Daftar Media -->
+                                <div class="px-6 py-4 max-h-72 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-4">
+                                    @forelse($product->media as $media)
+                                        <label class="relative border rounded-lg overflow-hidden group cursor-pointer">
+                                            <input type="checkbox" value="{{ $media->id }}" x-model="selectedFiles"
+                                                class="absolute top-2 left-2 z-10 w-4 h-4">
+
+                                            @if (str_contains($media->file_type, 'video'))
+                                                <!-- Thumbnail dari frame pertama video -->
+                                                <img src="https://res.cloudinary.com/{{ config('cloudinary.cloud_name') }}/video/upload/so_0/{{ $media->file_path }}.jpg"
+                                                    alt="Thumbnail Video"
+                                                    class="w-full h-28 object-cover rounded-lg group-hover:opacity-80 transition">
+                                                <div
+                                                    class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center text-white text-2xl font-bold">
+                                                    ▶
+                                                </div>
+                                            @else
+                                                <img src="{{ cloudinary_url($media->file_path, 'image', 'w_200,h_150,c_fill') }}"
+                                                    class="w-full h-28 object-cover rounded-lg group-hover:opacity-80 transition">
+                                            @endif
+
+                                        </label>
+                                    @empty
+                                        <p class="col-span-full text-gray-500 text-sm text-center">Tidak ada media tersedia
+                                        </p>
+                                    @endforelse
+                                </div>
+
+                                <!-- Footer Actions -->
+                                <div class="flex justify-end gap-2 px-6 py-4 border-t bg-gray-50">
+                                    <button @click="openAssetModal=false"
+                                        class="px-4 py-2 text-sm rounded-lg border hover:bg-gray-100">
+                                        Batal
+                                    </button>
+                                    <button @click="downloadSelected()"
+                                        class="px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                                        :disabled="selectedFiles.length === 0">
+                                        <i class="fa-solid fa-download mr-1"></i> Unduh Terpilih
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
                 </div>
+
+                <script>
+                    function assetModal() {
+                        return {
+                            openAssetModal: false,
+                            selectedFiles: [],
+                            mediaCount: {{ $product->media->count() }},
+                            openModal() {
+                                if (this.mediaCount > 0) {
+                                    this.openAssetModal = true;
+                                }
+                            },
+                       downloadSelected() {
+    fetch("{{ route('media.downloadSelected') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ files: this.selectedFiles })
+    })
+    .then(res => res.json())
+    .then(data => {
+        data.files.forEach(file => {
+            const link = document.createElement('a');
+            link.href = file.url;
+            link.download = file.name; 
+            console.log(file.name);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        });
+    });
+}
+,
+                            copyDescription(text) {
+                                navigator.clipboard.writeText(text).then(() => {
+                                    alert('Deskripsi berhasil disalin!');
+                                });
+                            }
+                        };
+                    }
+                </script>
+
 
             </div>
         </div>
@@ -138,8 +243,29 @@
 
             <h1 class="text-2xl font-bold text-gray-800">{{ $product->name }}</h1>
             @if ($rating && $rating->rating_count > 0)
+                @php
+                    $fullStars = floor($rating->rating);
+                    $halfStar = $rating->rating - $fullStars >= 0.5;
+                    $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
+                @endphp
+
                 <div class="flex items-center text-sm text-yellow-400">
-                    ★★★★☆
+                    {{-- Full Stars --}}
+                    @for ($i = 0; $i < $fullStars; $i++)
+                        <span>★</span>
+                    @endfor
+
+                    {{-- Half Star --}}
+                    @if ($halfStar)
+                        <span class="text-yellow-300">★</span>
+                    @endif
+
+                    {{-- Empty Stars --}}
+                    @for ($i = 0; $i < $emptyStars; $i++)
+                        <span class="text-gray-300">★</span>
+                    @endfor
+
+                    {{-- Rating Text --}}
                     <span class="text-gray-600 ml-2">
                         ({{ number_format($rating->rating, 1) }} dari {{ $rating->rating_count }} ulasan)
                     </span>
@@ -147,6 +273,7 @@
             @else
                 <p class="text-sm text-gray-500">Belum ada rating.</p>
             @endif
+
 
             @if ($product->variants->count())
                 <p class="text-2xl text-blue-600 font-bold">
@@ -358,7 +485,7 @@
                     <div
                         class="flex-none w-56 bg-white border border-blue-100 rounded-xl p-3 shadow-sm hover:shadow-md hover:bg-blue-50 transition">
                         <a href="{{ route('product.show', $product->slug) }}">
-                            <img src="{{ cloudinary_url($product->media->first()?->file_path ?? 'https://source.unsplash.com/300x200/?product') }}"
+                            <img src="{{ cloudinary_url($product->media->first()?->file_path ?? 'productDefault_mpgglw') }}"
                                 alt="{{ $product->name }}" class="w-full h-32 object-cover rounded-lg mb-2" />
                         </a>
 

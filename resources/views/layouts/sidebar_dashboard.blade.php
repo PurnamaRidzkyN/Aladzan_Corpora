@@ -108,13 +108,24 @@
 
         <!-- Notifikasi -->
         <div class="text-xs text-gray-400 font-bold uppercase mt-6 px-2">Lainnya</div>
-        <div class="flex items-center justify-between px-4 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
+        @php
+            $user = auth('admin')->user() ;
+            $unreadCount = $user->unreadNotifications()->count();
+        @endphp
+
+        <a href="{{ route('admin.notifications') }}"
+            class="flex items-center justify-between px-4 py-2 hover:bg-gray-100 rounded-lg cursor-pointer">
             <div class="flex items-center gap-3 text-sm text-gray-700">
                 <i class="fa-solid fa-bell text-yellow-500 w-4"></i>
                 <span>Notifikasi</span>
             </div>
-            <span class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px]">3</span>
-        </div>
+            @if ($unreadCount > 0)
+                <span class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px]">
+                    {{ $unreadCount }}
+                </span>
+            @endif
+        </a>
+
     </div>
 
     <div class="border-t px-4 py-3 bg-white hover:bg-gray-50 transition">

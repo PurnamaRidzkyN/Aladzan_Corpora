@@ -51,6 +51,8 @@ class CreateOrdersCartsWishlistTable extends Migration
             $table->string('product_name');
             $table->tinyInteger('quantity');
             $table->integer('price_each');
+            $table->string('variant_name')->nullable();
+            $table->string('shop_name')->nullable();
         });
 
         Schema::create('carts', function (Blueprint $table) {

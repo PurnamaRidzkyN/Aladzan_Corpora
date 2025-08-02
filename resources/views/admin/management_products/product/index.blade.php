@@ -138,19 +138,22 @@
                                             <!-- VIDEO -->
                                             <template x-if="item.file_type.startsWith('video')">
                                                 <div class="relative w-full h-full cursor-pointer"
-                                                    @click="preview = 'https://res.cloudinary.com/dpujlyn9x/video/upload/' + item.file_path ; type = 'video'">
-                                                    <video
-                                                        class="w-full h-full object-cover rounded-xl border pointer-events-none">
-                                                        <source
-                                                            :src="'https://res.cloudinary.com/dpujlyn9x/video/upload/' + item
-                                                                .file_path"
-                                                            :type="item.file_type">
-                                                    </video>
+                                                    @click="preview = 'https://res.cloudinary.com/dpujlyn9x/video/upload/' + item.file_path; type = 'video'">
+
+                                                    <!-- Thumbnail dari frame pertama video -->
+                                                    <img :src="'https://res.cloudinary.com/dpujlyn9x/video/upload/so_0/' + item
+                                                        .file_path + '.jpg'"
+                                                        alt="Thumbnail Video"
+                                                        class="w-full h-full object-cover rounded-xl border" />
+
+                                                    <!-- Overlay ikon play -->
                                                     <div
                                                         class="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center text-white text-xl font-bold">
-                                                        ▶</div>
+                                                        ▶
+                                                    </div>
                                                 </div>
                                             </template>
+
                                         </div>
                                     </template>
 
@@ -328,12 +331,11 @@
 
                                 <input type="number" :name="`variants[${index}][price]`" x-model="variant.price"
                                     class="input input-bordered w-full" placeholder="Harga Varian" required>
-                                    <input type="hidden" :name="`variants[${index}][variant_id]`" x-model="variant.id">
+                                <input type="hidden" :name="`variants[${index}][variant_id]`" x-model="variant.id">
                             </div>
-
                             <!-- Pilih Gambar dari Media -->
                             <select class="select select-bordered w-full max-w-xs text-sm"
-                                :name="`variants[${index}][media_id]`" x-model="variant.media_id">
+                                :name="`variants[${index}][media_id]`" x-model="m.id">
 
                                 <!-- Ini hanya ditampilkan saat belum ada pilihan -->
                                 <option disabled value="">Pilih Gambar</option>
@@ -348,18 +350,19 @@
                                     </option>
                                 </template>
 
-
-                                <!-- Daftar semua pilihan gambar/video -->
-                                <template x-for="media in $store.productForm.mediaOptions" :key="media.id">
+                                <!-- Filter media hanya gambar -->
+                                <template x-for="media in $store.productForm.mediaOptions.filter(m => m.type === 'image')"
+                                    :key="media.id">
                                     <option :value="media.id" x-text="media.name"></option>
                                 </template>
+
+
                             </select>
 
 
                             <!-- Tombol Hapus -->
                             <div class="text-right">
-                                 <button 
-                                    type="button" 
+                                <button type="button"
                                     @click="
                                         if (variant.id) {
                                             // Tambahkan hidden input 'deleted_variants[]'
@@ -382,7 +385,7 @@
                         @click="$store.productForm.formData.variants.push({ name: '', price: '', media_id: null ,variant_id : null})"
                         class="btn btn-sm btn-outline mt-2">+ Tambah Variasi</button>
                 </div>
-    <div x-ref="deletedVariants"></div>
+                <div x-ref="deletedVariants"></div>
                 <!-- Tombol Aksi -->
                 <div class="col-span-1 md:col-span-2 flex justify-end gap-2 pt-4 border-t mt-4">
                     <label for="modal_produk" class="btn  btn-gradient-neutral"
@@ -538,14 +541,14 @@
 
             // 📁 Media lama
             existingMedia.forEach((item, index) => {
-                const isVideo = item.file_type.startsWith('video/');
+                const isVideo = item.file_type.startsWith('video');
                 const li = document.createElement('li');
                 li.className = 'relative border rounded-md shadow overflow-hidden group';
 
                 const content = isVideo ?
-                    `<video class="w-full h-24 object-cover" muted>
-            <source src="https://res.cloudinary.com/dpujlyn9x/video/upload/${item.file_path}" type="video/${item.file_type}">
-       </video>` :
+                    `<img src="https://res.cloudinary.com/dpujlyn9x/video/upload/so_0/${item.file_path}.jpg" 
+             alt="Thumbnail Video" 
+             class="w-full h-24 object-cover" />` :
                     `<img src="https://res.cloudinary.com/dpujlyn9x/image/upload/${item.file_path}"
             class="w-full h-24 object-cover" alt="${item.original_name}">`;
 

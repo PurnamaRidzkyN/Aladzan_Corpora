@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-    <div class="space-y-6" x-data="{ openChoose: false, openDelete: false, actionChoose: '', actionDelete: '' }">
+    <div class="space-y-6" x-data="{ openChoose: false, openDelete: false,selectedAddressId: null, actionDelete: '' }">
         <!-- Judul utama -->
         <h1 class="text-2xl font-bold text-primary mb-4">Daftar Alamat</h1>
 
@@ -44,16 +44,13 @@
 
                         <div class="flex flex-wrap gap-2">
                             @if (!empty($chooseeAddress))
-                                {
                                 <button type="button" class="btn btn-sm btn-gradient-primary"
                                     @click="
-                                    actionChoose='{{ route('checkout') }}';
-                                    openChoose=true;
-                                ">
+                selectedAddressId = {{ $address->id }};
+                openChoose = true;
+            ">
                                     Pilih
                                 </button>
-
-                                }
                             @endif
 
                             <!-- Tombol EDIT -->
@@ -107,25 +104,25 @@
             @endforelse
         </div>
         @if (!empty($chooseeAddress))
-            {
             <!-- MODAL PILIH -->
-            <div x-show="openChoose" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-                x-transition>
-                <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-                    <h3 class="font-bold text-lg">Konfirmasi</h3>
-                    <p class="py-4">Pilih alamat ini?</p>
-                    <div class="flex justify-end gap-2">
-                        <button type="button" class="btn btn-gradient-neutral" @click="openChoose=false">Batal</button>
-                        <form method="POST" :action="actionChoose">
-                            @csrf
-                            <input type="hidden" name="items_json" value='{{ json_encode($cartItemIds) }}'>
-                            <input type="hidden" name="address_id" value="{{ $address->id }}">
-                            <button type="submit" class="btn btn-gradient-success">Ya</button>
-                        </form>
+                <template x-if="openChoose">
+                    <div class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" x-transition>
+                        <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+                            <h3 class="font-bold text-lg">Konfirmasi</h3>
+                            <p class="py-4">Pilih alamat ini?</p>
+                            <div class="flex justify-end gap-2">
+                                <button type="button" class="btn btn-gradient-neutral"
+                                    @click="openChoose=false">Batal</button>
+                                <form method="POST" action="{{ route('checkout') }}">
+                                    @csrf
+                                    <input type="hidden" name="items_json" value='{{ json_encode($cartItemIds) }}'>
+                                    <input type="hidden" name="address_id" :value="selectedAddressId">
+                                    <button type="submit" class="btn btn-gradient-success">Ya</button>
+                                </form>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-            }
+                </template>
         @endif
         <!-- MODAL HAPUS -->
         <div x-show="openDelete" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
@@ -169,14 +166,14 @@
 
                     <div class="form-control">
                         <label class="label">Nomor HP</label>
-                        <input type="text" name="phone_number" id="form_phone_number" class="input input-bordered w-full"
-                            required />
+                        <input type="text" name="phone_number" id="form_phone_number"
+                            class="input input-bordered w-full" required />
                     </div>
 
                     <div class="form-control">
                         <label class="label">RT</label>
-                        <input type="text" name="neighborhood" id="form_neighborhood" class="input input-bordered w-full"
-                            required />
+                        <input type="text" name="neighborhood" id="form_neighborhood"
+                            class="input input-bordered w-full" required />
                     </div>
 
                     <div class="form-control">

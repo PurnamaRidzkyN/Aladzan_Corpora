@@ -32,7 +32,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Contoh Reseller',
             'email' => 'himadatsuki@gmail.com',
             'password' => bcrypt('password123'),
-            'pfp_path' => 'default.png',
+            'pfp_path' => 'default.jpg',
             'phone' => '081234567890',
             'email_verified_at' => now(),
         ]);

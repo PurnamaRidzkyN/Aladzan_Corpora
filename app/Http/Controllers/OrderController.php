@@ -47,4 +47,20 @@ class OrderController extends Controller
         $orders = Order::with('orderItems')->get();
         return view('admin.order.history_orders', compact('orders'));
     }
+        public function orderHistory()
+    {
+        $orders = Order::where('reseller_id', auth()->id())
+            ->with('orderItems.variant.product', 'rating')
+            ->get();
+        return view('store.profile.order_history', compact('orders'));
+    }
+    public function orderDetail($order_code)
+    {
+        $order = Order::where('order_code', $order_code)->first();
+        if (!$order) {
+            return back()->with('error', 'Order tidak ditemukan atau sudah dibatalkan.');
+        }
+        $order->shops = Order::where('order_code', $order_code)->with('orderItems.variant.product')->get();
+        return view('store.profile.detail_order', compact('order'));
+    }
 }

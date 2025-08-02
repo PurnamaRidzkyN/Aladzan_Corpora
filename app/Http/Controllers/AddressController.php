@@ -48,7 +48,6 @@ class AddressController extends Controller
                 'sub_district' => $address->sub_district,
                 'sub_district_id' => $address->sub_district_id,
             ]);
-            return redirect()->back()->with('success', 'Alamat berhasil ditambahkan.');
         } else {
             $response = Http::withHeaders([
                 'key' => config('services.rajaongkir.key'),
@@ -82,14 +81,14 @@ class AddressController extends Controller
                 'sub_district' => $data['data'][0]['subdistrict_name'],
                 'sub_district_id' => $data['data'][0]['id'],
             ]);
-            if ($request->has('items_json')) {
-                $request = new Request([
-                    'items_json' => $request->items_json,
-                ]);
-                return app(PaymentController::class)->chooseAddress($request);
-            }
-            return redirect()->back()->with('success', 'Alamat berhasil ditambahkan.');
         }
+        if ($request->has('items_json')) {
+            $request = new Request([
+                'items_json' => $request->items_json,
+            ]);
+            return app(PaymentController::class)->chooseAddress($request);
+        }
+        return redirect()->back()->with('success', 'Alamat berhasil ditambahkan.');
     }
 
     public function update(Request $request, $id)

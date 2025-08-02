@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Cart;
+use App\Models\Order;
 use App\Models\Reseller;
 use App\Models\Wishlist;
 use Illuminate\Support\Facades\Http;
@@ -10,6 +11,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\ShopController;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\MediaController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\OngkirController;
@@ -23,6 +25,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\ResellerController;
 use App\Http\Controllers\WishlistController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\DashboardResellerController;
 
 /*
@@ -74,7 +77,6 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 Route::get('/staff-only', [AuthController::class, 'showLoginAdminForm'])->name('login.admin');
 Route::post('/staff-only', [AuthController::class, 'loginAdmin'])->name('login.admin.post');
 
-
 /*
 |--------------------------------------------------------------------------
 | STAFF-ONLY PREFIX ROUTES (ADMIN CRUD)
@@ -106,6 +108,9 @@ Route::middleware([AdminMiddleware::class])->group(function () {
         Route::resource('discount', DiscountController::class);
         Route::get('/resellers', [ResellerController::class, 'resellerAccount'])->name('reseller.index');
         Route::delete('/resellers/{id}', [ResellerController::class, 'resellerDestroy'])->name('reseller.destroy');
+        Route::get('/notifications', [NotificationController::class, 'index'])->name('admin.notifications');
+
+        Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsReadAdmin'])->name('admin.notifications.read');
     });
 });
 Route::middleware([ResellerMiddleware::class])->group(function () {
@@ -116,7 +121,8 @@ Route::middleware([ResellerMiddleware::class])->group(function () {
     Route::get('/cart', [CartController::class, 'cart'])->name('cart');
     Route::delete('/cart/{id}', [CartController::class, 'cartDestroy'])->name('cart.destroy');
     Route::resource('address', AddressController::class);
-    Route::get('/order-history', [ResellerController::class, 'orderHistory'])->name('order.history');
+    Route::get('/order-history', [OrderController::class, 'orderHistory'])->name('order.history');
+    Route::get('/order/{order_code}', [OrderController::class, 'orderDetail'])->name('order.detail');
     Route::prefix('checkout')->group(function () {
         Route::post('/choose-address', [PaymentController::class, 'chooseAddress'])->name('checkout.chooseAddress');
         Route::post('/', [PaymentController::class, 'checkout'])->name('checkout');
@@ -139,8 +145,11 @@ Route::middleware([ResellerMiddleware::class])->group(function () {
         Route::get('/course/{id}/video', [CourseController::class, 'videoIndex'])->name('reseller.course.video');
         Route::get('/course/{id}/video/{video_id}', [CourseController::class, 'videoShow'])->name('reseller.course.video.show');
     });
-
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('reseller.notifications');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsReadReseller'])->name('reseller.notifications.read');
     Route::get('/upgrade-account', [ResellerController::class, 'showUpgradeAccount'])->name('upgrade.account');
     Route::get('/check-discount/{code}', [DiscountController::class, 'check'])->name('check.discount');
     Route::post('/upgrade-account', [ResellerController::class, 'upgradeAccount'])->name('upgrade.account.post');
+    Route::post('/media/download', [MediaController::class, 'downloadSelected'])
+    ->name('media.downloadSelected');
 });

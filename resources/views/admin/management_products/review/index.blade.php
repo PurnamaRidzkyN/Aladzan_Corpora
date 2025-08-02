@@ -10,18 +10,22 @@
         <div
             class="bg-white border p-4 rounded-xl shadow mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div class="flex items-center gap-4">
-                <img src="https://via.placeholder.com/80x80?text=Matcha" class="w-20 h-20 rounded-lg object-cover"
-                    alt="Matcha Latte">
+
                 <div>
                     <h2 class="text-lg font-semibold">{{ $product->name }}</h2>
-                    <p class="text-sm text-gray-500">{{ $product->description }}</p>
-                    <p class="text-sm text-gray-500">Kategori:</p>
-                    @foreach ($product->categories as $category)
-                        <p class="text-sm text-gray-500">{{ $category->name }}</p>
-                    @endforeach
+                    <p class="text-sm text-gray-500 mb-2">{{ $product->description }}</p>
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-sm text-gray-600 font-medium">Kategori:</span>
+                        @foreach ($product->categories as $category)
+                            <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
+                                {{ $category->name }}
+                            </span>
+                        @endforeach
+                    </div>
                 </div>
+
             </div>
-            <a href="#" class="btn btn-outline btn-sm sm:btn-md">← Kembali</a>
+            <a href="{{ route('shops.products.index', $product->shop->id) }}" class="btn btn-outline btn-sm sm:btn-md">← Kembali</a>
         </div>
         <!-- Rangkuman -->
         <div class="flex items-center gap-4 mb-4">

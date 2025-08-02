@@ -12,7 +12,7 @@ class CourseController extends Controller
     public function groupVideoIndex()
     {
         $groups = VideoGroup::all();
-        return view('reseller.course.group_video', compact('groups'));
+        return view('course.group_video', compact('groups'));
     }
     public function groupVideoStore(Request $request)
     {
@@ -61,7 +61,7 @@ class CourseController extends Controller
         $group = VideoGroup::findOrFail($id);
         $videos = Video::where('video_group_id', $id)->get();
         $video_group_id = $id;
-        return view('reseller.course.video', compact('group', 'videos', 'video_group_id'));
+        return view('course.video', compact('group', 'videos', 'video_group_id'));
     }
     public function videoStore(Request $request)
     {
@@ -150,6 +150,6 @@ class CourseController extends Controller
     public function videoShow($id, $video_id)
     {
         $video = Video::where('video_group_id', $id)->where('id', $video_id)->first();
-        return view('reseller.course.video_show', compact('video'));
+        return view('course.video_show', compact('video'));
     }
 }

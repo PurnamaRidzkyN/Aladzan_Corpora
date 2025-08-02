@@ -57,7 +57,7 @@
                 <div
                     class="rounded-xl border border-soft bg-white hover:bg-accent-light hover:shadow-md transition-all duration-200 group">
                     <a href="{{ route('product.show', $product->slug) }}" class="block p-4">
-                        <img src="{{ cloudinary_url($product->media->first()?->file_path ?? 'https://source.unsplash.com/300x200/?product') }}"
+                        <img src="{{ cloudinary_url($product->media->first()?->file_path ?? 'productDefault_mpgglw') }}"
                             alt="{{ $product->name }}" class="w-full sm:h-40 object-cover rounded-lg mb-3" />
 
                         <h3 class="text-sm font-semibold truncate text-gray-900 mb-1">{{ $product->name }}</h3>

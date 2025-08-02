@@ -53,7 +53,7 @@
                             {{ number_format($order->total_price, 0, ',', '.') }}</p>
 
                         <div class="text-right space-x-2">
-                            <a href="" class="btn btn-sm bg-gray-200 text-gray-700 hover:bg-gray-300">Lihat
+                            <a href="{{ route('order.detail', $order->order_code) }}" class="btn btn-sm bg-gray-200 text-gray-700 hover:bg-gray-300">Lihat
                                 Detail</a>
                             @if ($order->status === 0)
                                 <a href="{{ route('payment', $order->order_code) }}"

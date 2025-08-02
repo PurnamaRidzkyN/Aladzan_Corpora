@@ -10,6 +10,7 @@ use Illuminate\Support\Str;
 use App\Models\ShippingCost;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Helpers\NotificationHelper;
 use Illuminate\Support\Facades\Http;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
@@ -46,7 +47,7 @@ class PaymentController extends Controller
         }
         $addresses = auth()->user()->addresses()->get();
         $chooseeAddress = true;
-        return view('store.profile.address', compact('cartItemIds', 'addresses', 'chooseeAddress','items'));
+        return view('store.profile.address', compact('cartItemIds', 'addresses', 'chooseeAddress', 'items'));
     }
     public function checkout(Request $request)
     {
@@ -72,8 +73,7 @@ class PaymentController extends Controller
                 return $item->variant->product->shop->name;
             });
 
-        // Ambil alamat tujuan reseller (user)
-        $address = Address::where('reseller_id', auth()->id())->first();
+        $address = Address::find($request->address_id);
         if (!$address) {
             return redirect()->route('cart')->with('error', 'Alamat belum diatur.');
         }
@@ -156,15 +156,22 @@ class PaymentController extends Controller
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_variant_id' => $cart->variant->id,
-                    'product_name' => $cart->variant->product->name . ' - ' . $cart->variant->name,
+                    'product_name' => $cart->variant->product->name ,
                     'quantity' => $cart->quantity,
                     'price_each' => $cart->variant->price,
+                    'variant_name' => $cart->variant->name,
+                    'shop_name' => $cart->variant->product->shop->name,
                 ]);
 
                 $cart->delete();
             }
 
             DB::commit();
+            $reseller = auth()->guard('reseller')->user();
+            
+            NotificationHelper::notifyAdmins('Pesanan Baru', $reseller->name . ' melakukan pembelian Order #' . $order->order_code, route('orders.current'));
+
+            NotificationHelper::notifyReseller($reseller, 'Pesanan Dibuat', 'Pesanan #' . $order->order_code . ' berhasil dibuat', route('order.history'));
 
             return redirect()->route('payment', $order->order_code);
         } catch (\Illuminate\Validation\ValidationException $e) {

@@ -157,11 +157,16 @@ class ProductController extends Controller
                     // Update varian lama
                     $variant = ProductVariant::find($variantData['variant_id']);
                     if ($variant) {
-                        $variant->update([
+                        $data = [
                             'name' => $variantData['name'],
                             'price' => $variantData['price'],
-                            'product_media_id' => $variantData['media_id'],
-                        ]);
+                        ];
+
+                        if (!empty($variantData['media_id'])) {
+                            $data['product_media_id'] = $variantData['media_id'];
+                        }
+
+                        $variant->update($data);
                     }
                 } else {
                     return redirect()->back()->with('Error', 'Variant ID tidak ditemukan.');
@@ -172,10 +177,6 @@ class ProductController extends Controller
         return redirect()->back()->with('success', 'Produk berhasil diperbarui!');
     }
 
-    public function show($id)
-    {
-        // Tampilkan detail produk (opsional)
-    }
 
     public function destroy($id)
     {

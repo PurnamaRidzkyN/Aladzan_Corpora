@@ -12,13 +12,7 @@ use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
 class ResellerController extends Controller
 {
-    public function orderHistory()
-    {
-        $orders = Order::where('reseller_id', auth()->id())
-            ->with('orderItems.variant.product', 'rating')
-            ->get();
-        return view('store.profile.order_history', compact('orders'));
-    }
+
     public function updateProfile(Request $request)
     {
         $request->validate([
