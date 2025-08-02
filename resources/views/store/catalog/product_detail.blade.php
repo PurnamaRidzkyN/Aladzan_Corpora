@@ -127,12 +127,13 @@
                     @endforeach
                 </div>
                 <a href="{{ route('shop.show', $product->shop->slug) }}"
-                    class="flex items-center gap-2 hover:bg-gray-100 px-3 py-1 rounded-lg transition">
+                    class="flex items-center gap-2 px-3 py-2 rounded-lg border border-sky-200 bg-white shadow-sm hover:shadow-md transition">
                     <div>
                         <p class="text-sm font-semibold text-gray-800 leading-4">{{ $product->shop->name }}</p>
                         <p class="text-xs text-gray-500">Lihat toko</p>
                     </div>
                 </a>
+
             </div>
 
             <h1 class="text-2xl font-bold text-gray-800">{{ $product->name }}</h1>
@@ -514,7 +515,5 @@
             };
         }
     </script>
-
-
 
 @endsection

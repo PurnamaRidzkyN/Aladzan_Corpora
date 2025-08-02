@@ -46,9 +46,9 @@ Route::post('/login', [AuthController::class, 'loginReseller'])->name('login.res
 
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register'])->name('register.post');
-Route::get('/register/verify/{name}/{email}/{password}', [AuthController::class, 'verifyLink'])->name('register.verify');
+Route::get('/register/verify/{email}', [AuthController::class, 'verifyLink'])->name('register.verify');
 
-Route::get('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/forgot-password/{ir}', [AuthController::class, 'showForgotForm'])->name('password.request');
 Route::post('/forgot-password', [AuthController::class, 'sendResetLink'])->name('password.email');
@@ -74,14 +74,6 @@ Route::get('/auth/google/callback', [AuthController::class, 'handleGoogleCallbac
 Route::get('/staff-only', [AuthController::class, 'showLoginAdminForm'])->name('login.admin');
 Route::post('/staff-only', [AuthController::class, 'loginAdmin'])->name('login.admin.post');
 
-/*
-|--------------------------------------------------------------------------
-| ADMIN PAGES (NO GUARD YET)
-|--------------------------------------------------------------------------
-*/
-Route::get('/admin/reseller', function () {
-    return view('admin.reseller.index');
-})->name('resellers.index');
 
 /*
 |--------------------------------------------------------------------------
@@ -112,6 +104,8 @@ Route::middleware([AdminMiddleware::class])->group(function () {
         Route::delete('/course/{id}/video/{video_id}', [CourseController::class, 'videoDestroy'])->name('group.course.video.destroy');
         Route::get('/course/{id}/video/{video_id}', [CourseController::class, 'videoShow'])->name('group.course.video.show');
         Route::resource('discount', DiscountController::class);
+        Route::get('/resellers', [ResellerController::class, 'resellerAccount'])->name('reseller.index');
+        Route::delete('/resellers/{id}', [ResellerController::class, 'resellerDestroy'])->name('reseller.destroy');
     });
 });
 Route::middleware([ResellerMiddleware::class])->group(function () {

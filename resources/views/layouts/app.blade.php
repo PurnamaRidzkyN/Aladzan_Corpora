@@ -99,21 +99,30 @@
 
                     {{-- Dropdown Menu --}}
                     <div x-show="openUser" @click.away="openUser = false" x-cloak
-                        class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg p-3 z-10 text-sm">
-                        @if ($adminLoggedIn)
-                            <a href="/admin/dashboard"
-                                class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Dashboard</a>
-                            <a href="/logout" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Logout</a>
-                        @elseif(auth()->check())
-                            <div class="px-3 py-2 text-gray-900 font-semibold truncate">{{ auth()->user()->name }}</div>
-                            <a href="/profil" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Profil
-                                Saya</a>
-                            <a href="/logout" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Logout</a>
-                        @else
-                            <a href="/login" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Login /
-                                Daftar</a>
-                        @endif
-                    </div>
+    class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg p-3 z-10 text-sm">
+    @if ($adminLoggedIn)
+        <a href="/admin/dashboard"
+            class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Dashboard</a>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">
+                Logout
+            </button>
+        </form>
+    @elseif(auth()->check())
+        <div class="px-3 py-2 text-gray-900 font-semibold truncate">{{ auth()->user()->name }}</div>
+        <a href="/profil" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Profil Saya</a>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="w-full text-left px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">
+                Logout
+            </button>
+        </form>
+    @else
+        <a href="/login" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Login / Daftar</a>
+    @endif
+</div>
+
                 </div>
 
 
@@ -233,9 +242,10 @@
         </div>
     </div>
 @endif
+
         @yield('content')
     </div>
-    <footer class="bg-base-200 text-base-content mt-10">
+    <footer class="bg-base-200 text-base-content mt-10 ">
         <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
             <!-- Brand -->
             <div>

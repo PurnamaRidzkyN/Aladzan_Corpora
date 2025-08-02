@@ -96,9 +96,9 @@
             </a>
 
 
-            <a href="{{ route('resellers.index') }}"
+            <a href="{{ route('reseller.index') }}"
                 class="flex items-center px-4 py-2 rounded-lg font-medium transition
-        {{ request()->routeIs('resellers.index') ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-100 text-gray-700' }}">
+        {{ request()->routeIs('reseller.index') ? 'bg-blue-50 text-blue-700' : 'hover:bg-gray-100 text-gray-700' }}">
                 <i class="fa-solid fa-users text-cyan-500 w-4"></i>
                 <span class="ml-3">List Reseller</span>
             </a>

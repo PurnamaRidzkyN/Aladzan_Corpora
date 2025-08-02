@@ -24,4 +24,5 @@ class ProductVariant extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+  
 }

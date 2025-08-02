@@ -11,6 +11,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Socialite\Facades\Socialite;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
 
@@ -224,13 +225,12 @@ class AuthController extends Controller
             $pfpUrl = $googleUser['pfp_path'] ?? null;
             $googleId = $googleUser['google_id'] ?? null;
 
-            $cloudinaryUrl = 'default.png';
 
             if ($pfpUrl) {
                 $tmpFile = tempnam(sys_get_temp_dir(), 'avatar_');
                 file_put_contents($tmpFile, file_get_contents($pfpUrl));
 
-                $uploadResult = Cloudinary::upload($tmpFile, [
+                $uploadResult = Cloudinary::uploadApi()->upload($tmpFile, [
                     'public_id' => 'Profile/R-' . auth()->id(),
                     'folder' => 'Profile',
                     'overwrite' => true,
@@ -258,7 +258,7 @@ class AuthController extends Controller
             Auth::login($reseller);
             session()->forget('google_user_data');
 
-            return redirect('/home');
+            return redirect()->route('upgrade.account')->with('success', 'Pendaftaran berhasil. Selamat datang!');
         } else {
             $validated = $request->validate([
                 'name' => 'required|string|max:100',
@@ -272,46 +272,54 @@ class AuthController extends Controller
                 'password' => Hash::make($validated['password']),
                 'phone' => $validated['phone'],
             ];
-        
 
-        $url = URL::temporarySignedRoute('register.verify', now()->addMinutes(5), $temp);
+            Cache::put('register_' . $validated['email'], $temp, now()->addMinutes(5));
 
-        Mail::send(
-            'email.verify_email',
-            [
-                'url' => $url,
-                'name' => $temp['name'],
-            ],
-            function ($message) use ($validated) {
-                $message->to($validated['email'])->subject('Verifikasi Pendaftaran');
-            },
-        );
+            $url = URL::temporarySignedRoute('register.verify', now()->addMinutes(5), ['email' => $validated['email']]);
+            Mail::send(
+                'email.verify_email',
+                [
+                    'url' => $url,
+                    'name' => $temp['name'],
+                ],
+                function ($message) use ($validated) {
+                    $message->to($validated['email'])->subject('Verifikasi Pendaftaran');
+                },
+            );
 
-        return back()->with('success', 'Link verifikasi telah dikirim ke email Anda.');
+            return redirect('/')->with('success', 'Link verifikasi telah dikirim ke email Anda. Silakan cek email Anda dan konfirmasi melalui tautan yang telah dikirim.');
+        }
     }
-    }
 
-    public function verifyLink(Request $request)
+    public function verifyLink(Request $request, $email)
     {
         if (!$request->hasValidSignature()) {
             abort(401, 'Link verifikasi tidak valid atau sudah kedaluwarsa.');
         }
 
-        if (Reseller::where('email', $request->email)->exists()) {
+        if (Reseller::where('email', $email)->exists()) {
             return redirect()->route('register.form')->withErrors('Email sudah terdaftar.');
         }
 
+        // Ambil data dari cache
+        $data = Cache::get('register_' . $email);
+
+        if (!$data) {
+            return redirect()->route('register.form')->withErrors('Data pendaftaran tidak ditemukan atau link sudah kedaluwarsa.');
+        }
+
+        // Simpan user baru
         $user = Reseller::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'password' => $request->password,
-            'phone' => $request->phone,
-            'pfp_path' => 'default.png',
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'password' => $data['password'],
+            'phone' => $data['phone'],
+            'pfp_path' => 'default_wxli5k.jpg',
         ]);
 
         Auth::login($user);
 
-        return redirect('/home')->with('success', 'Akun berhasil dibuat. Selamat datang!');
+        return redirect()->route('upgrade.account')->with('success', 'Pendaftaran berhasil. Selamat datang!');
     }
 
     public function showChangePassword()
@@ -357,7 +365,6 @@ class AuthController extends Controller
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-
-        return redirect('/login');
+        return redirect('/');
     }
 }

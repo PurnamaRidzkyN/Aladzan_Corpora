@@ -54,5 +54,20 @@ class Product extends Model
     {
         return $this->hasMany(ProductVariant::class);
     }
+ public function orderItems()
+{
+    return $this->hasManyThrough(
+        OrderItem::class,        
+        ProductVariant::class,   
+        'product_id',            
+        'product_variant_id',    
+        'id',                    
+        'id'                     
+    );
+}
+ public function getSoldAttribute()
+    {
+        return $this->orderItems()->whereHas('order', fn($q) => $q->where('status', 3))->sum('quantity');
+    }
    
 }

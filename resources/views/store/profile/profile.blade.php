@@ -53,6 +53,23 @@
                             <div class="text-sm text-gray-500">Ubah info akun</div>
                         </div>
                     </a>
+                    <a href="{{ route('change.password') }}"
+                        class="flex items-center p-4 rounded-xl hover:bg-blue-100 transition">
+                    <i class="fa fa-key  text-blue-600 text-xl mr-3"></i>
+                        <div>
+                            <div class="font-semibold text-blue-900">Ganti kata sandi</div>
+                            <div class="text-sm text-gray-500">Ubah kata sandi akun</div>
+                        </div>
+                    </a>
+                    <a href="{{ route('upgrade.account') }}"
+                        class="flex items-center p-4 rounded-xl hover:bg-blue-100 transition">
+                    <i class="fa fa-level-up-alt  text-blue-600 text-xl mr-3"></i>
+                        <div>
+                            <div class="font-semibold text-blue-900">Upgrade Akun</div>
+                            <div class="text-sm text-gray-500">Tingkatka level akun anda</div> 
+                        </div>
+                    </a>
+
                     <a href="{{ route('logout') }}"
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();"
                         class="flex items-center p-4 rounded-xl hover:bg-red-100 transition">

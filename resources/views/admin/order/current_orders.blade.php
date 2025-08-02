@@ -30,7 +30,7 @@
                                 :class="{ 'bg-blue-50 border-blue-400': selectedOrderId === {{ $order->id }} }"
                             >
                                 <div class="font-semibold text-gray-800">Reseller {{ $order->reseller->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $order->status_name }}</div>
+                                <div class="text-sm text-gray-500"> <span class="badge badge-outline badge-{{ $order->status_color }}">{{ $order->status_name }} </span></div>
                                 <div class="text-xs text-gray-400">{{ $order->created_at->format('d M Y') }}</div>
                             </li>
                         @empty
@@ -59,8 +59,8 @@
                         <div>
                             <p><strong>Reseller:</strong> <span x-text="order.reseller.name"></span></p>
                             <p><strong>Kode Order:</strong> <span x-text="order.order_code"></span></p>
-                            <p><strong>Status:</strong> <span class="badge badge-warning" x-text="order.status_name"></span></p>
-                            <p><strong>Tanggal Order:</strong> <span x-text="order.created_at"></span></p>
+                            <p><strong>Status:</strong> <span class="badge badge-outline badge-{{ $order->status_color }}" x-text="order.status_name"></span></p>
+                            <p><strong>Tanggal Order:</strong> {{ \Carbon\Carbon::parse($order->created_at)->format('d M Y') }}</p>
                             <p><strong>Alamat Pengiriman:</strong> <span x-text="order.shipping_address"></span></p>
                         </div>
 

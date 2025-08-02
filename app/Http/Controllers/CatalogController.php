@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 class CatalogController extends Controller
 {
-     public function ShowHome()
+    public function ShowHome()
     {
         $categories = Category::all();
         $products = Product::with('media', 'shop', 'rating', 'variants')->get();
@@ -43,6 +43,20 @@ class CatalogController extends Controller
         if ($request->filled('q')) {
             $query->where('products.name', 'like', '%' . $request->q . '%');
         }
+        $query->selectSub(function ($q) {
+            $q->from('order_items')->join('orders', 'orders.id', '=', 'order_items.order_id')->join('product_variants', 'product_variants.id', '=', 'order_items.product_variant_id')->where('orders.status', 3)->whereColumn('product_variants.product_id', 'products.id')->selectRaw('COALESCE(SUM(order_items.quantity), 0)');
+        }, 'sold');
+        $query->selectSub(function ($q) {
+    $q->from('product_variants')
+        ->selectRaw('MIN(price)')
+        ->whereColumn('product_variants.product_id', 'products.id');
+}, 'min_price');
+
+$query->selectSub(function ($q) {
+    $q->from('product_variants')
+        ->selectRaw('MAX(price)')
+        ->whereColumn('product_variants.product_id', 'products.id');
+}, 'max_price');
 
         switch ($request->sort) {
             case 'terlaris':
@@ -76,7 +90,21 @@ class CatalogController extends Controller
         $query->whereHas('categories', function ($q) use ($slug) {
             $q->where('slug', $slug);
         });
+        $query->selectSub(function ($q) {
+            $q->from('order_items')->join('orders', 'orders.id', '=', 'order_items.order_id')->join('product_variants', 'product_variants.id', '=', 'order_items.product_variant_id')->where('orders.status', 3)->whereColumn('product_variants.product_id', 'products.id')->selectRaw('COALESCE(SUM(order_items.quantity), 0)');
+        }, 'sold');
 
+        $query->selectSub(function ($q) {
+    $q->from('product_variants')
+        ->selectRaw('MIN(price)')
+        ->whereColumn('product_variants.product_id', 'products.id');
+}, 'min_price');
+
+$query->selectSub(function ($q) {
+    $q->from('product_variants')
+        ->selectRaw('MAX(price)')
+        ->whereColumn('product_variants.product_id', 'products.id');
+}, 'max_price');
         switch ($request->sort) {
             case 'terlaris':
                 $query->orderByDesc('sold');
@@ -85,10 +113,10 @@ class CatalogController extends Controller
                 $query->orderByDesc('rsv.rating');
                 break;
             case 'harga_tertinggi':
-                $query->orderByDesc('price');
+                $query->orderByDesc('max_price');
                 break;
             case 'harga_terendah':
-                $query->orderBy('price');
+                $query->orderBy('min_price');
                 break;
             default:
                 $query->orderByDesc('products.created_at');
@@ -121,7 +149,20 @@ class CatalogController extends Controller
                 $q->where('slug', $request->category);
             });
         }
+        $query->selectSub(function ($q) {
+            $q->from('order_items')->join('orders', 'orders.id', '=', 'order_items.order_id')->join('product_variants', 'product_variants.id', '=', 'order_items.product_variant_id')->where('orders.status', 3)->whereColumn('product_variants.product_id', 'products.id')->selectRaw('COALESCE(SUM(order_items.quantity), 0)');
+        }, 'sold');
+        $query->selectSub(function ($q) {
+    $q->from('product_variants')
+        ->selectRaw('MIN(price)')
+        ->whereColumn('product_variants.product_id', 'products.id');
+}, 'min_price');
 
+$query->selectSub(function ($q) {
+    $q->from('product_variants')
+        ->selectRaw('MAX(price)')
+        ->whereColumn('product_variants.product_id', 'products.id');
+}, 'max_price');
         // Filter sorting
         switch ($request->sort) {
             case 'terlaris':
@@ -131,10 +172,10 @@ class CatalogController extends Controller
                 $query->orderByDesc('rsv.rating');
                 break;
             case 'harga_tertinggi':
-                $query->orderByDesc('price');
+                $query->orderByDesc('max_price');
                 break;
             case 'harga_terendah':
-                $query->orderBy('price');
+                $query->orderBy('min_price');
                 break;
             default:
                 $query->orderByDesc('products.created_at');

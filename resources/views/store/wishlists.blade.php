@@ -16,8 +16,8 @@
 
                     <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-lg transition relative">
                         <a href="{{ route('product.show', $product->slug) }}">
-                            <img src="{{ 'https://drive.google.com/thumbnail?id=' . $product->media->first()?->file_path ?? 'https://source.unsplash.com/300x200/?product' }}"
-                                alt="{{ $product->name }}" class="w-full sm:h-40 object-cover rounded-lg mb-3" />
+                              <img src="{{ cloudinary_url($product->media->first()?->file_path ?? 'https://source.unsplash.com/300x200/?product') }}"
+                            alt="{{ $product->name }}" class="w-full sm:h-40  object-cover rounded-lg mb-3" />
                         </a>
 
                         <h3 class="text-sm font-semibold truncate text-gray-900 mb-1">{{ $product->name }}</h3>
@@ -78,7 +78,7 @@
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-gradient-error">Ya, Hapus</button>
                                     </form>
-                                    <label for="delete-wishlist-{{ $wishlist->id }}" class="btn">Batal</label>
+                                    <label for="delete-wishlist-{{ $wishlist->id }}" class="btn-gradient-neutral">Batal</label>
                                 </div>
                             </div>
                         </div>
@@ -91,14 +91,14 @@
                 {{ $wishlists->links() }}
             </div>
         @else
-            <div
-                class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-xl">
-                <div class="text-center text-gray-500 py-10">
-                    <i class="fas fa-heart text-4xl mb-4 text-gray-300"></i>
-                    <p class="text-sm">Belum ada produk yang disimpan di wishlist.</p>
-                    <a href="{{ route('home') }}" class="text-blue-600 hover:underline mt-2 inline-block">Lihat produk</a>
-                </div>
-            </div>
+           <div class="mt-20 flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-200 rounded-xl">
+    <div class="text-center text-gray-500 py-10">
+        <i class="fas fa-heart text-5xl mb-4 text-gray-300"></i>
+        <p class="text-sm">Belum ada produk yang disimpan di wishlist.</p>
+        <a href="{{ route('home') }}" class="text-blue-600 hover:underline mt-2 inline-block">Lihat produk</a>
+    </div>
+</div>
+
         @endif
     </div>
 

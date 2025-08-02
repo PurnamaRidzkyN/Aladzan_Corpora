@@ -43,7 +43,7 @@
                                 <td>Rp{{ number_format($order->total_price, 0, ',', '.') }}</td>
                                 <td>
                                     <span class="badge badge-outline badge-{{ $order->status_color }}">
-                                        {{ ucfirst(str_replace('_', ' ', $order->status)) }}
+                                        {{ ucfirst(str_replace('_', ' ', $order->status_name)) }}
                                     </span>
                                 </td>
                                 <td class="text-center">

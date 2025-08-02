@@ -43,13 +43,18 @@
                         </div>
 
                         <div class="flex flex-wrap gap-2">
-                            <button type="button" class="btn btn-sm btn-gradient-primary"
-                                @click="
+                            @if (!empty($chooseeAddress))
+                                {
+                                <button type="button" class="btn btn-sm btn-gradient-primary"
+                                    @click="
                                     actionChoose='{{ route('checkout') }}';
                                     openChoose=true;
                                 ">
-                                Pilih
-                            </button>
+                                    Pilih
+                                </button>
+
+                                }
+                            @endif
 
                             <!-- Tombol EDIT -->
                             <button class="btn btn-sm btn-gradient-warning" onclick="editAddress({{ $address }})">
@@ -84,27 +89,44 @@
                     </div>
                 </div>
             @empty
-                <div class="col-span-full text-center text-gray-500">Belum ada alamat.</div>
+                <div class=" col-span-full text-center py-10 w-full">
+                    <div
+                        class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-gray-300 rounded-xl">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-gray-400 mb-2" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20 13V7a2 2 0 00-2-2H6a2 2 0 00-2 2v6m16 0l-2.293 2.293a1 1 0 01-.707.293H6a1 1 0 01-.707-.293L3 13m17 0V17a2 2 0 01-2 2H6a2 2 0 01-2-2v-4" />
+                        </svg>
+
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M7 16V4a1 1 0 011-1h8a1 1 0 011 1v12m-9 4h10m-10 0a2 2 0 110-4h10a2 2 0 110 4m-10 0V20" />
+                        </svg>
+                        <p class="text-sm text-gray-500">Belum ada alamat yang ditambahkan.</p>
+                    </div>
+                </div>
             @endforelse
         </div>
-        <!-- MODAL PILIH -->
-        <div x-show="openChoose" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
-            x-transition>
-            <div class="bg-white rounded-lg shadow-lg p-6 w-96">
-                <h3 class="font-bold text-lg">Konfirmasi</h3>
-                <p class="py-4">Pilih alamat ini?</p>
-                <div class="flex justify-end gap-2">
-                    <button type="button" class="btn btn-gradient-neutral" @click="openChoose=false">Batal</button>
-                    <form method="POST" :action="actionChoose">
-                        @csrf
-                        <input type="hidden" name="items_json" value='{{ json_encode($cartItemIds) }}'>
-                        <input type="hidden" name="address_id" value="{{ $address->id }}">
-                        <button type="submit" class="btn btn-gradient-success">Ya</button>
-                    </form>
+        @if (!empty($chooseeAddress))
+            {
+            <!-- MODAL PILIH -->
+            <div x-show="openChoose" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+                x-transition>
+                <div class="bg-white rounded-lg shadow-lg p-6 w-96">
+                    <h3 class="font-bold text-lg">Konfirmasi</h3>
+                    <p class="py-4">Pilih alamat ini?</p>
+                    <div class="flex justify-end gap-2">
+                        <button type="button" class="btn btn-gradient-neutral" @click="openChoose=false">Batal</button>
+                        <form method="POST" :action="actionChoose">
+                            @csrf
+                            <input type="hidden" name="items_json" value='{{ json_encode($cartItemIds) }}'>
+                            <input type="hidden" name="address_id" value="{{ $address->id }}">
+                            <button type="submit" class="btn btn-gradient-success">Ya</button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-
+            }
+        @endif
         <!-- MODAL HAPUS -->
         <div x-show="openDelete" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
             x-transition>
