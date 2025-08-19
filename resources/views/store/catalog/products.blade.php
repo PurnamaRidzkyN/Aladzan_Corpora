@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Produk Katalog')
 @section('content')
     <div x-data="{ sort: '{{ request('sort', 'latest') }}' }">
         <!-- Judul Search / Kategori -->

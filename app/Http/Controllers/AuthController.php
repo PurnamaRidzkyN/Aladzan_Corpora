@@ -119,7 +119,7 @@ class AuthController extends Controller
             },
         );
 
-        return back()->with('status', 'Link reset password telah dikirim ke email Anda.');
+        return back()->with('status', 'Link reset password telah dikirim ke email Anda. Silakan klik link tersebut kedaluarsa 5 menit.');
     }
     public function showResetForm(Request $request)
     {
@@ -224,7 +224,6 @@ class AuthController extends Controller
 
             $pfpUrl = $googleUser['pfp_path'] ?? null;
             $googleId = $googleUser['google_id'] ?? null;
-
 
             if ($pfpUrl) {
                 $tmpFile = tempnam(sys_get_temp_dir(), 'avatar_');

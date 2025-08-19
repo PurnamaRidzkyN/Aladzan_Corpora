@@ -13,18 +13,26 @@
 
         <!-- Full Box: Toko -->
         <div
-            class="card bg-white shadow-md rounded-xl border border-soft p-6 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-6">
-            <div class="space-y-2">
-                <h2 class="text-2xl font-bold text-primary">{{ $shop->name }}</h2>
-                <p class="text-sm text-gray-700 max-w-3xl">
-                    {{ $shop->description }}
-                </p>
-                <p class="text-sm text-gray-600 flex items-center gap-1">
+            class="card bg-white shadow-md rounded-xl border border-soft p-6 flex flex-col lg:flex-row items-start lg:items-center gap-6">
+            <!-- Gambar di kiri -->
+            <div class="flex-shrink-0">
+                <img src="{{ cloudinary_url($shop->img_path ?? 'productDefault_mpgglw') }}"
+                    class="w-24 h-24 rounded-full object-cover border-2 border-blue-300" alt="Foto toko">
+            </div>
 
+            <!-- Konten di kanan -->
+            <div class="flex-1 space-y-2">
+                <h2 class="text-2xl font-bold text-primary">{{ $shop->name }}</h2>
+                <p class="text-sm text-gray-700 max-w-3xl">{{ $shop->description }}</p>
+                <p class="text-sm text-gray-600 flex items-center gap-1">
                     Kota/Kabupaten: <span class="font-medium">{{ $shop->city }}</span>
                 </p>
             </div>
-            <label for="modal_edit_toko" class="btn btn-gradient-warning whitespace-nowrap">Edit Toko</label>
+
+            <!-- Tombol Edit -->
+            <label for="modal_edit_toko" class="btn btn-gradient-warning whitespace-nowrap self-start lg:self-center">
+                Edit Toko
+            </label>
         </div>
 
 
@@ -114,10 +122,28 @@
                         <div class="flex justify-between items-start mb-2">
                             <h3 class="text-xl font-bold text-primary">Detail Produk</h3>
                             <div class="space-x-2">
-                                <button class="btn btn-gradient-warning btn-xs"
-                                    @click="$store.productForm.openEdit(selected)">Edit</button>
-                                <label for="delete_product" class="btn btn-gradient-error btn-xs "
+                                <!-- Tombol Edit, muncul kalau belum soft delete -->
+                                <button class="btn btn-gradient-warning btn-xs" x-show="!selected.deleted_at"
+                                    @click="$store.productForm.openEdit(selected)">
+                                    Edit
+                                </button>
+
+                                <label for="delete_product" class="btn btn-gradient-error btn-xs " x-show="!selected.deleted_at"
                                     @click="confirmDelete(selected.id, selected.name)">Hapus</label>
+                               
+
+                                <!-- Tombol Restore, muncul kalau sudah soft delete -->
+                                <label class="btn btn-gradient-warning btn-xs" x-show="selected.deleted_at"
+                                    @click="restoreProduct(selected.id)">
+                                    Restore
+                                </label>
+
+                                <!-- Tombol Hapus Permanen, muncul kalau sudah soft delete -->
+                                <label class="btn btn-gradient-error btn-xs" x-show="selected.deleted_at"
+                                    @click="forceDeleteProduct(selected.id)">
+                                    Hapus Permanen
+                                </label>
+
                             </div>
                         </div>
 
@@ -335,7 +361,7 @@
                             </div>
                             <!-- Pilih Gambar dari Media -->
                             <select class="select select-bordered w-full max-w-xs text-sm"
-                                :name="`variants[${index}][media_id]`" x-model="m.id">
+                                :name="`variants[${index}][media_id]`" x-model="variant.media_id">
 
                                 <!-- Ini hanya ditampilkan saat belum ada pilihan -->
                                 <option disabled value="">Pilih Gambar</option>
@@ -351,7 +377,8 @@
                                 </template>
 
                                 <!-- Filter media hanya gambar -->
-                                <template x-for="media in $store.productForm.mediaOptions.filter(m => m.type === 'image')"
+                                <template
+                                    x-for="media in $store.productForm.mediaOptions.filter(m => m.type.startsWith('image'))"
                                     :key="media.id">
                                     <option :value="media.id" x-text="media.name"></option>
                                 </template>
@@ -492,23 +519,13 @@
 
         function addFiles(event) {
             const inputFiles = Array.from(event.target.files);
-            selectedFiles = selectedFiles.concat(inputFiles);
-
-            // Update mediaOptions
-            const startIndex = Date.now();
-            inputFiles.forEach((file, i) => {
-                Alpine.store('productForm').mediaOptions.push({
-                    id: `${startIndex}_${i}`,
-                    name: file.name,
-                    type: file.type,
-                    file: file,
-                });
-            });
-            syncMediaOptions();
+            selectedFiles = [...selectedFiles, ...inputFiles]; // simpan ke selectedFiles saja
+            syncMediaOptions(); // ini akan rebuild mediaOptions dari existingMedia + selectedFiles
             renderFileList();
             rebuildHiddenInputs();
             event.target.value = '';
         }
+
 
 
         function removeFile(index) {
@@ -625,40 +642,36 @@
 
         function syncMediaOptions() {
             const store = Alpine.store('productForm');
-
-            // Ambil dari existingMedia + selectedFiles
             const newOptions = [];
 
-            // Media lama (existing)
-            (window.existingMedia || []).forEach((item) => {
+            // Media lama
+            (window.existingMedia || []).forEach(item => {
                 newOptions.push({
                     id: item.id,
                     name: item.original_name,
-                    type: item.file_type,
+                    type: item.file_type?.startsWith('image') ? item.file_type : item.file_type || '',
                 });
-
             });
 
-            // Media baru (selectedFiles)
+            // Media baru
             (selectedFiles || []).forEach((file, i) => {
                 newOptions.push({
                     id: file.lastModified + '_' + i,
                     name: file.name,
-                    type: file.type,
+                    type: file.type || '',
                     file: file
                 });
             });
 
-            store.mediaOptions = newOptions;
+            store.mediaOptions = [...newOptions];
 
-            // Hapus media_id di variant kalau sudah tidak ada di mediaOptions
+            // Hapus media_id di variant kalau tidak valid
             const validIds = newOptions.map(m => m.id);
             store.formData.variants.forEach(v => {
                 if (!validIds.includes(v.media_id)) {
                     v.media_id = null;
                 }
             });
-
         }
     </script>
 
@@ -688,6 +701,58 @@
             form.action = `{{ route('products.destroy', ':id') }}`.replace(':id', id);
         }
     </script>
+    <!-- MODAL HAPUS PRODUK (PERMANEN) -->
+<input type="checkbox" id="force_delete_product" class="modal-toggle" />
+<div class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Hapus Permanen Produk</h3>
+        <p class="py-4">Yakin ingin <strong>menghapus permanen</strong> produk <span id="forceProductName">Produk</span>?</p>
+        <div class="modal-action">
+            <form method="POST" id="forceDeleteProductForm">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-gradient-error">Ya, Hapus Permanen</button>
+                <label for="force_delete_product" class="btn btn-gradient-neutral">Batal</label>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL RESTORE PRODUK -->
+<input type="checkbox" id="restore_product" class="modal-toggle" />
+<div class="modal">
+    <div class="modal-box">
+        <h3 class="font-bold text-lg">Restore Produk</h3>
+        <p class="py-4">Apakah ingin <strong>mengembalikan</strong> produk <span id="restoreProductName">Produk</span>?</p>
+        <div class="modal-action">
+            <form method="POST" id="restoreProductForm">
+                @csrf
+                @method('PATCH')
+                <button type="submit" class="btn btn-gradient-warning">Ya, Restore</button>
+                <label for="restore_product" class="btn btn-gradient-neutral">Batal</label>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Hapus Permanen
+    function forceDelete(id, name) {
+        document.getElementById('forceProductName').textContent = name;
+        const form = document.getElementById('forceDeleteProductForm');
+        form.action = `{{ route('products.forceDelete', ':id') }}`.replace(':id', id);
+        document.getElementById('force_delete_product').checked = true;
+    }
+
+    // Restore
+    function restoreProduct(id, name) {
+        document.getElementById('restoreProductName').textContent = name;
+        const form = document.getElementById('restoreProductForm');
+        form.action = `{{ route('products.restore', ':id') }}`.replace(':id', id);
+        document.getElementById('restore_product').checked = true;
+    }
+</script>
+
 
     <script>
         function produkFilter(products, categories) {
@@ -718,10 +783,22 @@
     <div class="modal">
         <div class="modal-box w-full max-w-md">
             <h3 class="font-bold text-lg mb-2 text-primary">Edit Toko</h3>
-            <form action="{{ route('shops.update', $shop->id) }}" method="POST" class="space-y-4">
+            <form action="{{ route('shops.update', $shop->id) }}" method="POST" class="space-y-4"
+                enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
-
+                <div class="mb-4 text-center">
+                    <img id="preview" src="{{ cloudinary_url($shop->img_path ?? 'productDefault_mpgglw') }}"
+                        class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-blue-300 mb-2" alt="Foto toko">
+                    <input type="file" name="img_path" accept="image/*"
+                        class="block w-full text-sm text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200"
+                        onchange="previewImage(event)">
+                </div>
+                <div class="mb-4">
+                    <label class="block mb-1 font-semibold text-sm text-gray-700">Video toko</label>
+                    <input type="text" name="video_path" value="{{ old('video_path', $shop->video_path) }}"
+                        class="input input-bordered w-full">
+                </div>
                 <div class="mb-4">
                     <label class="block mb-1 font-semibold text-sm text-gray-700">Nama Toko</label>
                     <input type="text" name="name" value="{{ old('name', $shop->name) }}"
@@ -746,5 +823,17 @@
             </form>
         </div>
     </div>
+    <script>
+        function previewImage(event) {
+            const input = event.target;
+            const reader = new FileReader();
 
+            reader.onload = function() {
+                const preview = document.getElementById('preview');
+                preview.src = reader.result;
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    </script>
 @endsection

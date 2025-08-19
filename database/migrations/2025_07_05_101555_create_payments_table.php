@@ -10,58 +10,30 @@ class CreatePaymentsTable extends Migration
         Schema::create('discounts', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();
-            $table->integer('amount'); 
+            $table->integer('amount');
             $table->boolean('is_percent')->default(false);
             $table->date('valid_until')->nullable();
             $table->timestamps();
         });
-
-        Schema::create('payments', function (Blueprint $table) {
+     
+        Schema::create('order_subscriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('reseller_id')->constrained()->onDelete('cascade');
-            $table->string('external_id')->unique();
-            $table->decimal('amount', 12, 2);
-            $table->string('status');
-            $table->string('payment_method');
-            $table->timestamps();
+            $table->foreignId('reseller_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('plan_id')->nullable()->constrained()->nullOnDelete();
+            $table->integer('price');
+            $table->string('discount_code')->nullable();
+            $table->integer('discount_amount')->default(0);
+            $table->string('payment_method')->nullable(); 
+            $table->string('payment_proof')->nullable();
+                    $table->tinyInteger('status')->default(0); 
             $table->timestamp('paid_at')->nullable();
-        });
-
-        Schema::create('withdrawals', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('reseller_id')->constrained()->onDelete('cascade');
-            $table->decimal('amount', 12, 2);
-            $table->string('status');
-            $table->timestamp('requested_at');
-            $table->timestamp('processed_at')->nullable();
-            $table->string('bank_name');
-            $table->string('account_number');
-            $table->string('account_holder_name');
-        });
-
-        Schema::create('xendit_webhook_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('payment_id')->constrained('payments')->onDelete('cascade');
-            $table->string('event_type');
-            $table->text('raw_payload');
-            $table->timestamp('received_at');
-        });
-
-        Schema::create('activity_logs', function (Blueprint $table) {
-            $table->id();
-            $table->enum('actor_type', ['admin', 'reseller']);
-            $table->unsignedBigInteger('actor_id');
-            $table->string('action');
-            $table->text('description')->nullable();
             $table->timestamps();
         });
     }
 
     public function down()
     {
-        Schema::dropIfExists('activity_logs');
-        Schema::dropIfExists('xendit_webhook_logs');
-        Schema::dropIfExists('withdrawals');
         Schema::dropIfExists('discounts');
+        Schema::dropIfExists('order_subscriptions');
     }
 }

@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Product extends Model
 {
+    use SoftDeletes;
     protected $fillable = ['name', 'description', 'shop_id','weight'];
 
     protected static function booted()
@@ -42,10 +44,11 @@ class Product extends Model
     {
         return $this->hasMany(ProductMedia::class);
     }
-    public function review()
-    {
-        return $this->hasMany(Rating::class);
-    }
+   public function review()
+{
+    return $this->hasMany(Rating::class)->orderBy('rating', 'desc');
+}
+
     public function rating()
     {
         return $this->hasOne(RatingSummary::class);
@@ -65,9 +68,6 @@ class Product extends Model
         'id'                     
     );
 }
- public function getSoldAttribute()
-    {
-        return $this->orderItems()->whereHas('order', fn($q) => $q->where('status', 3))->sum('quantity');
-    }
+
    
 }

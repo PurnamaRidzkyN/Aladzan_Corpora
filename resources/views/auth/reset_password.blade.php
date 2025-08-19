@@ -4,7 +4,10 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Reset Password - ResellerShop</title>
+    <title>Reset Password - ALADZAN CORPORA</title>
+    <link rel="icon" type="image/png" href="{{ asset('storage/logo1.png') }}">
+    <link rel="shortcut icon" href="{{ asset('storage/logo1.png') }}">
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- Font Awesome -->
@@ -15,8 +18,12 @@
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
 
     <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
-        <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Ganti Password Anda</h2>
+       <div class="flex flex-col items-center mb-4">
+            <img src="{{ asset('storage/logo2.png') }}" alt="ALADZAN CORPORA Logo"
+                class="w-48 h-auto object-contain mb-2">
+            <h2 class="text-xl font-semibold text-gray-800 text-center">Ganti Kata Sandi Anda</h2>
 
+        </div>
         <form action="{{ route('password.reset') }}" method="POST" class="space-y-4">
             @csrf
 

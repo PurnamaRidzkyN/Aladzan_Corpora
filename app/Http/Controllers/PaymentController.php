@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Cart;
 use App\Models\Order;
 use App\Models\Address;
+use App\Models\Setting;
 use App\Models\OrderItem;
 use Illuminate\Support\Str;
 use App\Models\ShippingCost;
@@ -117,7 +118,6 @@ class PaymentController extends Controller
                 'total_price' => 'required|numeric',
                 'total_shipping' => 'required|numeric',
                 'address_id' => 'required|exists:addresses,id',
-                'payment_method' => 'required|numeric',
                 'note' => 'nullable|string',
             ]);
 
@@ -156,7 +156,7 @@ class PaymentController extends Controller
                 OrderItem::create([
                     'order_id' => $order->id,
                     'product_variant_id' => $cart->variant->id,
-                    'product_name' => $cart->variant->product->name ,
+                    'product_name' => $cart->variant->product->name,
                     'quantity' => $cart->quantity,
                     'price_each' => $cart->variant->price,
                     'variant_name' => $cart->variant->name,
@@ -168,7 +168,7 @@ class PaymentController extends Controller
 
             DB::commit();
             $reseller = auth()->guard('reseller')->user();
-            
+
             NotificationHelper::notifyAdmins('Pesanan Baru', $reseller->name . ' melakukan pembelian Order #' . $order->order_code, route('orders.current'));
 
             NotificationHelper::notifyReseller($reseller, 'Pesanan Dibuat', 'Pesanan #' . $order->order_code . ' berhasil dibuat', route('order.history'));
@@ -182,14 +182,37 @@ class PaymentController extends Controller
     public function payment($order_code)
     {
         $order = Order::where('order_code', $order_code)->first();
-        $total = $order->total_price + $order->total_shipping;
+        $total = $order->total_price;
         if (!$order || !$order->reseller_id == auth()->id()) {
             return redirect()->back()->with('error', 'order tidak ditemukan atau tidak berlaku untuk Anda.');
         }
+        $whatsapp = Setting::where('key', 'whatsapp')->first()->value ?? '';
+        $bankAccounts = json_decode(Setting::where('key', 'bank_accounts')->first()->value ?? '[]', true);
+        $ewallets = json_decode(Setting::where('key', 'ewallets')->first()->value ?? '[]', true);
+
+        // Susun menjadi format methods seperti sebelumnya
         $methods = [
-            'Bank' => [['id' => 'bca', 'name' => 'BCA Virtual Account', 'type' => 'va', 'description' => 'Transfer ke rekening virtual BCA', 'va_number' => '123 456 7890'], ['id' => 'bni', 'name' => 'BNI Virtual Account', 'type' => 'va', 'description' => 'Transfer ke rekening virtual BNI', 'va_number' => '123 456 7890'], ['id' => 'bri', 'name' => 'BRI Virtual Account', 'type' => 'va', 'description' => 'Transfer ke rekening virtual BRI', 'va_number' => '123 456 7890'], ['id' => 'mandiri', 'name' => 'Mandiri Virtual Account', 'type' => 'va', 'description' => 'Transfer ke rekening virtual Mandiri', 'va_number' => '123 456 7890'], ['id' => 'permata', 'name' => 'Permata Virtual Account', 'type' => 'va', 'description' => 'Transfer ke rekening virtual Permata', 'va_number' => '123 456 7890']],
-            'E-Wallet' => [['id' => 'dana', 'name' => 'DANA', 'type' => 'ewallet', 'description' => 'Bayar pakai DANA', 'phone_number' => '08123456789'], ['id' => 'ovo', 'name' => 'OVO', 'type' => 'ewallet', 'description' => 'Bayar pakai OVO', 'phone_number' => '08123456789'], ['id' => 'shopeepay', 'name' => 'ShopeePay', 'type' => 'ewallet', 'description' => 'Bayar pakai ShopeePay', 'phone_number' => '08123456789'], ['id' => 'linkaja', 'name' => 'LinkAja', 'type' => 'ewallet', 'description' => 'Bayar pakai LinkAja', 'phone_number' => '08123456789']],
-            'QRIS' => [['id' => 'qris', 'name' => 'QRIS', 'type' => 'qris', 'description' => 'Scan QR dengan aplikasi apapun']],
+            'Bank' => array_map(function ($bank) {
+                return [
+                    'id' => strtolower($bank['name']),
+                    'name' => $bank['name'],
+                    'type' => 'va',
+                    'description' => 'Transfer ke rekening virtual ' . $bank['name'],
+                    'va_number' => $bank['number'],
+                    'steps' => ['Buka mobile banking / ATM', 'Masukkan nomor virtual account', 'Masukkan nominal pembayaran', 'Konfirmasi pembayaran'],
+                ];
+            }, $bankAccounts),
+
+            'E-Wallet' => array_map(function ($wallet) {
+                return [
+                    'id' => strtolower($wallet['provider']),
+                    'name' => $wallet['provider'],
+                    'type' => 'ewallet',
+                    'description' => 'Bayar pakai ' . $wallet['provider'],
+                    'phone_number' => $wallet['number'],
+                    'steps' => ['Buka aplikasi ' . $wallet['provider'], 'Pilih menu transfer / top-up', 'Masukkan nomor tujuan / scan QR', 'Masukkan nominal pembayaran', 'Konfirmasi pembayaran'],
+                ];
+            }, $ewallets),
         ];
 
         return view('store.profile.payment', compact('order', 'methods', 'total'));
@@ -197,14 +220,14 @@ class PaymentController extends Controller
     public function paymentConfirm(Request $request)
     {
         $validated = $request->validate([
-            'selected_method_id' => 'required|integer|exists:payment_methods,id',
+            'selected_method' => 'required|string|in:va,ewallet,qris',
             'bukti_pembayaran' => 'required|image|mimes:jpeg,png,jpg|max:2048', // maksimal 2MB
         ]);
         $order = Order::where('order_code', $request->order_code)->first();
         if (!$order || !$order->reseller_id == auth()->id()) {
             return redirect()->back()->with('error', 'order tidak ditemukan atau tidak berlaku untuk Anda.');
         }
-        $order->payment_method = $validated['selected_method_id'];
+        $order->payment_method = $validated['selected_method'];
 
         $publicId = 'Pm/O-' . auth()->id() . '/' . $order->order_code;
 
@@ -217,9 +240,27 @@ class PaymentController extends Controller
         $order->update([
             'payment_proofs' => $payment['public_id'],
             'is_paid_at' => now(),
-            'payment_method' => $validated['selected_method_id'],
+            'payment_method' => $validated['selected_method'],
         ]);
+        NotificationHelper::notifyAdmins('Bukti Pembayaran Diterima', 'Bukti pembayaran untuk Order #' . $order->order_code . ' telah diterima.', route('orders.current'));
         return redirect()->route('order.history')->with('success', 'Bukti pembayaran sudah di kirimkan.');
+    }
+
+    public function orderCancel(Request $request)
+    {
+        $order = Order::find($request->order_id);
+        if (!$order || !$order->reseller_id == auth()->id()) {
+            return redirect()->back()->with('error', 'Order tidak ditemukan atau tidak berlaku untuk Anda.');
+        }
+
+        if ($order->status !== 0) {
+            return redirect()->back()->with('error', 'Hanya order yang belum dibayar yang bisa dibatalkan.');
+        }
+
+        $order->update(['status' => 4]);
+        NotificationHelper::notifyReseller($order->reseller, 'Order Dibatalkan', 'Order #' . $order->order_code . ' telah dibatalkan.', route('order.history'));
+        NotificationHelper::notifyAdmins('Order Dibatalkan', 'Order #' . $order->order_code . ' telah dibatalkan oleh reseller.', route('orders.current'));
+        return redirect()->route('order.history')->with('success', 'Order berhasil dibatalkan.');
     }
 
     private function calculateShipping($origin, $destination, $weight, $shopName)

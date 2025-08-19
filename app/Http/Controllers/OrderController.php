@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\Rating;
 use Illuminate\Http\Request;
+use App\Helpers\AdminActivityHelper;
+use App\Helpers\NotificationHelper;
 
 class OrderController extends Controller
 {
@@ -12,7 +15,9 @@ class OrderController extends Controller
      */
     public function currentOrders()
     {
-        $orders = Order::with('orderItems')->get();
+        $orders = Order::with('orderItems', 'reseller')
+            ->whereNotIn('status', [3, 4])
+            ->get();
         return view('admin.order.current_orders', compact('orders'));
     }
 
@@ -40,14 +45,17 @@ class OrderController extends Controller
         $order->update([
             'status' => $request->status,
         ]);
+        NotificationHelper::notifyReseller($order->reseller, 'Status Order Diperbarui', 'Status order Anda telah diperbarui menjadi: ' . $order->status_name, route('order.history'));
+        // Log aktivitas admin
+        AdminActivityHelper::log('UPDATE', 'orders', $order->id, 'Mengubah status order: ' . $order->order_code . ' ke status ' . $order->status_name);
         return back()->with('success', 'Status order berhasil diubah.');
     }
     public function history_orders()
     {
-        $orders = Order::with('orderItems')->get();
+        $orders = Order::with('orderItems','reseller')->get();
         return view('admin.order.history_orders', compact('orders'));
     }
-        public function orderHistory()
+    public function orderHistory()
     {
         $orders = Order::where('reseller_id', auth()->id())
             ->with('orderItems.variant.product', 'rating')
@@ -60,7 +68,8 @@ class OrderController extends Controller
         if (!$order) {
             return back()->with('error', 'Order tidak ditemukan atau sudah dibatalkan.');
         }
+        $review = Rating::where('order_id', $order->id)->latest()->first();
         $order->shops = Order::where('order_code', $order_code)->with('orderItems.variant.product')->get();
-        return view('store.profile.detail_order', compact('order'));
+        return view('store.profile.detail_order', compact('order', 'review'));
     }
 }

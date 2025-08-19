@@ -5,7 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@yield('title', 'ResellerShop')</title>
+    <link rel="icon" type="image/png" href="{{ asset('storage/logo1.png') }}">
+    <link rel="shortcut icon" href="{{ asset('storage/logo1.png') }}">
 
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     {{-- Gunakan Vite untuk CSS dan JS --}}
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -28,11 +31,14 @@
 
 <body class="bg-sky-50 text-gray-800  font-sans " x-data="{ open: false, openUser: false, openKategori: false }">
     <!-- 🔼 Navbar Atas -->
+
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
             <!-- Logo -->
             <a href="/" class="text-xl font-bold text-blue-600 hover:text-blue-700 transition">
-                Reseller<span class="text-gray-800">Shop</span>
+                <img src="{{ asset('storage/logo2.png') }}" alt="ALADZAN CORPORA Logo"
+                    class="w-48 h-auto object-contain mb-2">
+
             </a>
 
             <!-- Search Form -->
@@ -53,23 +59,25 @@
                     </svg>
                 </a>
             </div>
-            <div class="hidden md:flex items-center space-x-4">
-                {{-- Ikon notifikasi --}}
-                @php
-                    $user = auth('reseller')->user();
-                    $unreadCount = $user->unreadNotifications()->count();
-                @endphp
+            @if (auth()->check())
+                <div class="hidden md:flex items-center space-x-4">
+                    {{-- Ikon notifikasi --}}
 
-                <a href="{{ route('reseller.notifications') }}"
-                    class="group relative flex items-center justify-center text-gray-700 hover:text-blue-600">
-                    <i class="fa-solid fa-bell"></i>
-                    @if ($unreadCount > 0)
-                        <span class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px]">
-                            {{ $unreadCount }}
-                        </span>
-                    @endif
-                </a>
-            </div>
+                    @php
+                        $user = auth('reseller')->user();
+                        $unreadCount = $user?->unreadNotifications()->count() ?? 0;
+                    @endphp
+                    <a href="{{ route('reseller.notifications') }}"
+                        class="group relative flex items-center justify-center text-gray-700 hover:text-blue-600">
+                        <i class="fa-solid fa-bell"></i>
+                        @if ($unreadCount > 0)
+                            <span class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full text-[10px]">
+                                {{ $unreadCount }}
+                            </span>
+                        @endif
+                    </a>
+                </div>
+            @endif
             <!-- Menu -->
             <div class="hidden md:flex items-center gap-4">
                 <!-- Cart -->
@@ -154,18 +162,23 @@
     <!-- 🔽 Mobile Bottom Nav -->
     <div class="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t z-50 shadow">
         <div class="flex justify-around items-center h-16 text-sm text-gray-700">
+
             {{-- Home --}}
-            <a href="/" class="relative flex flex-col items-center justify-center hover:text-blue-600">
+            <a href="/"
+                class="relative flex flex-col items-center justify-center
+            {{ request()->is('/') ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
                 <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                     stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2 7-7 7 7 2 2" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 12l2-2 7-7 7 7 2 2" />
                 </svg>
                 <span>Home</span>
             </a>
 
             {{-- Wishlist --}}
             <a href="{{ route('favorite') }}"
-                class="relative flex flex-col items-center justify-center hover:text-pink-600">
+                class="relative flex flex-col items-center justify-center
+            {{ request()->is('favorite') ? 'text-pink-600 font-semibold' : 'hover:text-pink-600' }}">
                 <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"
                     xmlns="http://www.w3.org/2000/svg">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -175,23 +188,25 @@
             </a>
 
             {{-- Notifikasi --}}
-            @php
-                $user = auth('reseller')->user();
-                $unreadCount = $user?->unreadNotifications()->count() ?? 0;
-            @endphp
-            <a href="{{ route('reseller.notifications') }}"
-                class="relative flex flex-col items-center justify-center hover:text-blue-600">
-                <i class="fa-solid fa-bell text-[20px] mb-1"></i>
-                <span>Notifikasi</span>
-                @if ($unreadCount > 0)
-                    <span class="absolute -top-1 right-2 text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full">
-                        {{ $unreadCount }}
-                    </span>
-                @endif
-            </a>
+            @if (auth()->check())
+                <a href="{{ route('reseller.notifications') }}"
+                    class="relative flex flex-col items-center justify-center
+                {{ request()->is('reseller/notifications') ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
+                    <i class="fa-solid fa-bell text-[20px] mb-1"></i>
+                    <span>Notifikasi</span>
+                    @if ($unreadCount > 0)
+                        <span
+                            class="absolute -top-1 right-2 text-[10px] bg-red-500 text-white px-2 py-0.5 rounded-full">
+                            {{ $unreadCount }}
+                        </span>
+                    @endif
+                </a>
+            @endif
 
             {{-- Cart --}}
-            <a href="/cart" class="relative flex flex-col items-center justify-center hover:text-blue-600">
+            <a href="/cart"
+                class="relative flex flex-col items-center justify-center
+            {{ request()->is('cart') ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
                 <i class="fas fa-shopping-cart text-[20px] mb-1"></i>
                 <span>Cart</span>
             </a>
@@ -199,7 +214,8 @@
             {{-- Profil / Login --}}
             @if (Auth::guard('admin')->check())
                 <a href="/admin/dashboard"
-                    class="relative flex flex-col items-center justify-center hover:text-blue-600">
+                    class="relative flex flex-col items-center justify-center
+                {{ request()->is('admin/dashboard') ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
                     <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -208,13 +224,17 @@
                     <span>Dashboard</span>
                 </a>
             @elseif(auth()->check())
-                <a href="/profil" class="relative flex flex-col items-center justify-center hover:text-blue-600">
+                <a href="/profil"
+                    class="relative flex flex-col items-center justify-center
+                {{ request()->is('profil') ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
                     <img src="{{ cloudinary_url(auth()->user()->pfp_path) }}"
                         class="h-5 w-5 mb-1 rounded-full object-cover" alt="Profil">
                     <span>Profil</span>
                 </a>
             @else
-                <a href="/login" class="relative flex flex-col items-center justify-center hover:text-blue-600">
+                <a href="/login"
+                    class="relative flex flex-col items-center justify-center
+                {{ request()->is('login') ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
                     <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -223,8 +243,10 @@
                     <span>Profil</span>
                 </a>
             @endif
+
         </div>
     </div>
+
 
 
     {{-- Konten halaman --}}
@@ -247,6 +269,25 @@
                 <p class="text-sm font-medium">{{ session('success') }}</p>
             </div>
         @endif
+        @if (session('error'))
+            <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
+                class="mx-auto max-w-md mb-4  
+    rounded-lg shadow-md px-6 py-3 flex items-center space-x-3
+    text-red-900 bg-gradient-to-r from-red-100 via-red-50 to-red-100"
+                x-transition:enter="transition ease-out duration-300"
+                x-transition:enter-start="opacity-0 -translate-y-2" x-transition:enter-end="opacity-100 translate-y-0"
+                x-transition:leave="transition ease-in duration-200"
+                x-transition:leave-start="opacity-100 translate-y-0"
+                x-transition:leave-end="opacity-0 -translate-y-2">
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0 text-red-600" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                <p class="text-sm font-medium">{{ session('error') }}</p>
+            </div>
+        @endif
+
         @if ($errors->any())
             <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"
                 class="fixed inset-x-0 top-10 mx-auto max-w-md z-50
@@ -284,29 +325,30 @@
                 </p>
             </div>
 
-            <!-- Bantuan -->
+            <!-- Informasi -->
             <div>
-                <h4 class="footer-title">Bantuan</h4>
+                <h4 class="footer-title">Informasi</h4>
                 <ul class="space-y-1 text-sm">
-                    <li><a href="/faq" class="link link-hover">FAQ</a></li>
-                    <li><a href="/cara-belanja" class="link link-hover">Cara Belanja</a></li>
-                    <li><a href="/kontak" class="link link-hover">Kontak Kami</a></li>
+                    <li><a href="/snk" class="link link-hover">Syarat & Ketentuan</a></li>
+                    <li><a href="/kebijakan-privasi" class="link link-hover">Kebijakan Privasi</a></li>
+                    <li><a href="/disclaimer" class="link link-hover">Disclaimer</a></li>
                 </ul>
             </div>
 
-            <!-- Untuk Reseller -->
+            <!-- Tentang -->
             <div>
-                <h4 class="footer-title">Untuk Reseller</h4>
+                <h4 class="footer-title">Tentang</h4>
                 <ul class="space-y-1 text-sm">
-                    <li><a href="/register" class="link link-hover">Daftar Reseller</a></li>
-                    <li><a href="/login" class="link link-hover">Masuk</a></li>
-                    <li><a href="/syarat" class="link link-hover">Syarat & Ketentuan</a></li>
+                    <li><a href="/tentang-kami" class="link link-hover">Tentang Kami</a></li>
+                    <li><a href="/faq" class="link link-hover">FAQ</a></li>
+                    <li><a href="/kontak" class="link link-hover">Kontak Kami</a></li>
                 </ul>
             </div>
 
             <!-- Kontak -->
             <div>
                 <h4 class="footer-title">Customer Service</h4>
+                <a href="/feedback" class="link link-hover text-sm">Kritik dan Saran</a>
                 <p class="text-sm">Email: <a href="mailto:support@resellerhub.com"
                         class="link link-hover text-blue-600">support@resellerhub.com</a></p>
                 <div class="mt-3 flex space-x-3 text-xl">

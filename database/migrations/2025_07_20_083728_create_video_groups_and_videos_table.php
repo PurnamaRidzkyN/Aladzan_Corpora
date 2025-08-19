@@ -24,11 +24,19 @@ return new class extends Migration
             $table->string('video_id'); 
             $table->timestamps();
         });
+         Schema::create('communities', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('description');
+            $table->string('link');
+            $table->timestamps();
+        });
     }
 
     public function down(): void
     {
         Schema::dropIfExists('videos');
         Schema::dropIfExists('video_groups');
+        Schema::dropIfExists('communities');
     }
 };

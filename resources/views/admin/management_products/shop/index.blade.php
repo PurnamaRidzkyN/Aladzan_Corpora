@@ -53,7 +53,7 @@
                         </thead>
                         <tbody id="shopTableBody">
                             @forelse ($shops as $index => $shop)
-                                <tr class="hover:bg-accent-light transition">
+                                <tr class="hover:bg-accent-light transition" x-data>
                                     <td class="py-2">{{ $index + 1 }}</td>
                                     <td class="shop-name">{{ $shop->name }}</td>
                                     <td class="max-w-xs truncate max-w-[200px] shop-desc" title="{{ $shop->description }}">
@@ -61,31 +61,45 @@
                                     </td>
                                     <td><span class="text-yellow-500">⭐</span></td>
                                     <td class="text-center space-x-2">
-                                        <a href="{{ route('shops.products.index', $shop->id) }}"
-                                            class="btn btn-success btn-xs text-white">Lihat</a>
-                                        <label for="delete-store-{{ $shop->id }}"
-                                            class="btn btn-error btn-xs text-white">Hapus</label>
+                                        @if ($shop->trashed())
+                                            {{-- Restore hanya super admin --}}
+                                            @if (auth('admin')->user()?->is_super_admin)
+                                                <form action="{{ route('shops.restore', $shop->id) }}" method="POST"
+                                                    class="inline">
+                                                    @csrf
+                                                    @method('post')
+                                                    <button type="submit"
+                                                        class="btn btn-warning btn-xs text-white">Restore</button>
+                                                </form>
+                                            @endif
 
-                                        <!-- Modal -->
-                                        <input type="checkbox" id="delete-store-{{ $shop->id }}" class="modal-toggle" />
-                                        <div class="modal" role="dialog">
-                                            <div class="modal-box">
-                                                <h3 class="font-bold text-lg">Konfirmasi Hapus</h3>
-                                                <p class="py-4">Yakin ingin menghapus toko
-                                                    <strong>{{ $shop->name }}</strong>?
-                                                </p>
-                                                <div class="modal-action">
-                                                    <form action="{{ route('shops.destroy', $shop->id) }}" method="POST">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-gradient-error">Ya,
-                                                            Hapus</button>
-                                                    </form>
-                                                    <label for="delete-store-{{ $shop->id }}"
-                                                        class="btn  btn-gradient-neutral">Batal</label>
-                                                </div>
-                                            </div>
-                                        </div>
+                                            {{-- Tombol hapus permanen --}}
+                                            <button class="btn btn-error btn-xs text-white"
+                                                @click.prevent="
+                    $dispatch('open-force-delete-modal', {
+                        id: {{ $shop->id }},
+                        name: '{{ $shop->name }}',
+                        url: '{{ route('shops.forceDelete', $shop->id) }}'
+                    })
+                ">
+                                                Hapus Permanen
+                                            </button>
+                                        @else
+                                            <a href="{{ route('shops.products.index', $shop->id) }}"
+                                                class="btn btn-success btn-xs text-white">Lihat</a>
+
+                                            {{-- Tombol hapus (soft delete) --}}
+                                            <button class="btn btn-error btn-xs text-white"
+                                                @click.prevent="
+                    $dispatch('open-delete-modal', {
+                        id: {{ $shop->id }},
+                        name: '{{ $shop->name }}',
+                        url: '{{ route('shops.destroy', $shop->id) }}'
+                    })
+                ">
+                                                Hapus
+                                            </button>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
@@ -100,18 +114,76 @@
         </div>
 
     </section>
-
+    {{-- Modal force delete --}}
+    <div x-data="{ open: false, name: '', url: '' }"
+        x-on:open-force-delete-modal.window="
+        open = true; 
+        name = $event.detail.name; 
+        url = $event.detail.url;
+    ">
+        <template x-if="open">
+            <div class="modal modal-open" role="dialog">
+                <div class="modal-box">
+                    <h3 class="font-bold text-lg text-red-600">Konfirmasi Hapus Permanen</h3>
+                    <p class="py-4 text-red-500">Toko <strong x-text="name"></strong> akan dihapus <b>permanen</b> dan
+                        tidak bisa dikembalikan!</p>
+                    <div class="modal-action">
+                        <form :action="url" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-gradient-error">Ya, Hapus Permanen</button>
+                        </form>
+                        <button type="button" class="btn btn-gradient-neutral" @click="open = false">Batal</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+    <div x-data="{ open: false, name: '', url: '' }"
+        x-on:open-delete-modal.window="
+        open = true; 
+        name = $event.detail.name; 
+        url = $event.detail.url;
+    ">
+        <template x-if="open">
+            <div class="modal modal-open" role="dialog">
+                <div class="modal-box">
+                    <h3 class="font-bold text-lg">Konfirmasi Hapus</h3>
+                    <p class="py-4">Yakin ingin menghapus toko <strong x-text="name"></strong>?</p>
+                    <div class="modal-action">
+                        <form :action="url" method="POST">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-gradient-error">Ya, Hapus</button>
+                        </form>
+                        <button type="button" class="btn btn-gradient-neutral" @click="open = false">Batal</button>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
     <!-- Modal Tambah Toko -->
     <input type="checkbox" id="modal_toko" class="modal-toggle" />
     <div class="modal">
         <div class="modal-box w-full max-w-md">
             <h3 class="font-bold text-lg mb-2 text-primary">Tambah Toko</h3>
-            <form action="{{ route('shops.store') }}" method="POST" class="space-y-4">
+            <form action="{{ route('shops.store') }}" method="POST" class="space-y-4" enctype="multipart/form-data">
                 @csrf
-                <input type="text" name="name" placeholder="Nama toko" class="input input-bordered w-full" required>
+                <div class="mb-4 text-center">
+                    <img id="preview" src="{{ cloudinary_url('productDefault_mpgglw') }}"
+                        class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-blue-300 mb-2"
+                        alt="Foto Profil">
+                    <input type="file" name="img_path" accept="image/*"
+                        class="block w-full text-sm text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200"
+                        onchange="previewImage(event)">
+                </div>
+                <input type="text" name="video_path" placeholder="Video Toko" class="input input-bordered w-full">
+                <input type="text" name="name" placeholder="Nama toko" class="input input-bordered w-full"
+                    required>
                 <textarea name="description" placeholder="Deskripsi toko" rows="4" class="textarea textarea-bordered w-full"
                     required></textarea>
-                <input type="text" name="zipcode" placeholder="Kode Pos" class="input input-bordered w-full" required>
+                <input type="text" name="zipcode" placeholder="Kode Pos" class="input input-bordered w-full"
+                    required>
                 <div class="modal-action">
                     <label for="modal_toko" class="btn  btn-gradient-neutral">Batal</label>
                     <button type="submit" class="btn btn-gradient-primary">Simpan</button>
@@ -140,5 +212,17 @@
             });
         });
     </script>
+    <script>
+        function previewImage(event) {
+            const input = event.target;
+            const reader = new FileReader();
 
+            reader.onload = function() {
+                const preview = document.getElementById('preview');
+                preview.src = reader.result;
+            };
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    </script>
 @endsection

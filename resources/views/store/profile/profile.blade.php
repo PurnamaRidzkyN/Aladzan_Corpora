@@ -37,14 +37,17 @@
                             <div class="text-sm text-gray-500">Atur alamat kirim</div>
                         </div>
                     </a>
-                    <a href="{{ route('dashboard.reseller') }}"
-                        class="flex items-center p-4 rounded-xl hover:bg-blue-100 transition">
-                        <i class="fas fa-chart-line text-blue-600 text-xl mr-3"></i>
-                        <div>
-                            <div class="font-semibold text-blue-900">Masuk Dashboard</div>
-                            <div class="text-sm text-gray-500">Masuk ke dashboard</div>
-                        </div>
-                    </a>
+                    @if (auth()->user()->plan->name === 'Pro')
+                        <a href="{{ route('dashboard.reseller') }}"
+                            class="flex items-center p-4 rounded-xl hover:bg-blue-100 transition">
+                            <i class="fas fa-chart-line text-blue-600 text-xl mr-3"></i>
+                            <div>
+                                <div class="font-semibold text-blue-900">Masuk Dashboard</div>
+                                <div class="text-sm text-gray-500">Masuk ke dashboard</div>
+                            </div>
+                        </a>
+                    @endif
+
                     <a href="#" @click="open = true"
                         class="flex items-center p-4 rounded-xl hover:bg-blue-100 transition">
                         <i class="fas fa-user-cog text-blue-600 text-xl mr-3"></i>
@@ -55,7 +58,7 @@
                     </a>
                     <a href="{{ route('change.password') }}"
                         class="flex items-center p-4 rounded-xl hover:bg-blue-100 transition">
-                    <i class="fa fa-key  text-blue-600 text-xl mr-3"></i>
+                        <i class="fa fa-key  text-blue-600 text-xl mr-3"></i>
                         <div>
                             <div class="font-semibold text-blue-900">Ganti kata sandi</div>
                             <div class="text-sm text-gray-500">Ubah kata sandi akun</div>
@@ -63,10 +66,10 @@
                     </a>
                     <a href="{{ route('upgrade.account') }}"
                         class="flex items-center p-4 rounded-xl hover:bg-blue-100 transition">
-                    <i class="fa fa-level-up-alt  text-blue-600 text-xl mr-3"></i>
+                        <i class="fa fa-level-up-alt  text-blue-600 text-xl mr-3"></i>
                         <div>
                             <div class="font-semibold text-blue-900">Upgrade Akun</div>
-                            <div class="text-sm text-gray-500">Tingkatka level akun anda</div> 
+                            <div class="text-sm text-gray-500">Tingkatka level akun anda</div>
                         </div>
                     </a>
 
@@ -92,9 +95,12 @@
         <div x-show="open" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50" x-cloak>
             <div class="bg-white rounded-xl p-6 w-full max-w-md shadow-lg relative">
                 <!-- Close Button -->
-                <button @click="open = false" class="absolute top-2 right-2 text-gray-500 hover:text-gray-700">
-                    &times;
-                </button>
+               <button @click="open = false" 
+    class="absolute top-2 right-2 text-gray-500 hover:text-gray-700 
+           text-2xl leading-none font-bold p-2 rounded-full hover:bg-gray-200">
+    &times;
+</button>
+
 
                 <!-- Form Edit -->
                 <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">

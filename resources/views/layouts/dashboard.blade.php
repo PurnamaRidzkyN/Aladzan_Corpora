@@ -5,6 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@yield('title', 'Dashboard')</title>
+    <link rel="icon" type="image/png" href="{{ asset('storage/logo1.png') }}">
+    <link rel="shortcut icon" href="{{ asset('storage/logo1.png') }}">
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <!-- Font Awesome CDN -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
@@ -29,6 +33,24 @@
             <p class="text-sm font-medium">{{ session('success') }}</p>
         </div>
     @endif
+    @if (session('error'))
+        <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 4000)"
+            class="fixed inset-x-0 top-10 mx-auto max-w-md
+               rounded-lg shadow-md px-6 py-3 flex items-center space-x-3
+               text-red-900
+               bg-gradient-to-r from-red-100 via-red-50 to-red-100"
+            x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2"
+            x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-200"
+            x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 translate-y-2">
+
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 flex-shrink-0 text-red-600" fill="none"
+                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+            <p class="text-sm font-medium">{{ session('error') }}</p>
+        </div>
+    @endif
+
     <!-- Menampilkan Error Validation -->
     @if ($errors->any())
         <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 5000)"

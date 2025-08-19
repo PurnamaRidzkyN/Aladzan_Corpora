@@ -2,11 +2,12 @@
 
 namespace Database\Seeders;
 
+use App\Models\Plan;
 use App\Models\Shop;
 use App\Models\Admin;
-use App\Models\Rating;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use App\Models\Rating;
 use App\Models\Address;
 use App\Models\Product;
 use App\Models\Category;
@@ -22,6 +23,22 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+         
+        Plan::create([
+            'name' => 'Standard',
+            'description' => 'Dapat belanja saja',
+            'price' => 50000, 
+            'currency' => 'IDR',
+            'duration_days' => 0,
+        ]);
+        Plan::create([
+            'name' => 'Pro',
+            'description' => 'Dapat mempunyai link komunitas, belanja, dan video pembelajaran cara berjualan',
+            'price' => 100000, 
+            'currency' => 'IDR',
+            'duration_days' => 00, 
+        ]);
+
         Admin::create([
             'name' => 'Contoh Reseller',
             'email' => 'admin@gmail.com',
@@ -32,9 +49,11 @@ class DatabaseSeeder extends Seeder
             'name' => 'Contoh Reseller',
             'email' => 'himadatsuki@gmail.com',
             'password' => bcrypt('password123'),
-            'pfp_path' => 'default.jpg',
+            'pfp_path' => 'default_wxli5k.jpg',
             'phone' => '081234567890',
             'email_verified_at' => now(),
+            'plan_id' => 1,
+
         ]);
 
         // 1. Buat Toko
@@ -50,23 +69,28 @@ class DatabaseSeeder extends Seeder
         $productData = [
             [
                 'name' => 'Baju Katun',
-                'variants' => [['name' => 'M', 'price' => 120000], ['name' => 'L', 'price' => 125000]], 'weight' =>12
+                'variants' => [['name' => 'M', 'price' => 120000], ['name' => 'L', 'price' => 125000]],
+                'weight' => 12,
             ],
             [
                 'name' => 'Celana Jeans',
-                'variants' => [['name' => '32', 'price' => 180000], ['name' => '34', 'price' => 185000]], 'weight' =>12
+                'variants' => [['name' => '32', 'price' => 180000], ['name' => '34', 'price' => 185000]],
+                'weight' => 12,
             ],
             [
                 'name' => 'Sepatu Sneakers',
-                'variants' => [['name' => '40', 'price' => 250000], ['name' => '42', 'price' => 255000]], 'weight' =>12
+                'variants' => [['name' => '40', 'price' => 250000], ['name' => '42', 'price' => 255000]],
+                'weight' => 12,
             ],
             [
                 'name' => 'Topi Keren',
-                'variants' => [['name' => 'Hitam', 'price' => 80000]], 'weight' =>12
+                'variants' => [['name' => 'Hitam', 'price' => 80000]],
+                'weight' => 12,
             ],
             [
                 'name' => 'Tas Ransel',
-                'variants' => [['name' => 'Biru', 'price' => 200000]], 'weight' =>12
+                'variants' => [['name' => 'Biru', 'price' => 200000]],
+                'weight' => 12,
             ],
         ];
 

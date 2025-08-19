@@ -29,7 +29,7 @@
             orders: @js($orders),
             order: null,
             showModal: false
-        }" x-effect="order = orders.find(o => o.id === selectedOrderId) || null"
+             }" x-effect="order = orders.find(o => o.id === selectedOrderId) || null"
             class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- KIRI: DAFTAR ORDER -->
             <div class="md:col-span-1">
@@ -43,8 +43,9 @@
                                     :class="{ 'bg-blue-50 border-blue-400': selectedOrderId === {{ $order->id }} }">
                                     <div class="font-semibold text-gray-800">Reseller {{ $order->reseller->name }}</div>
                                     <div class="text-sm text-gray-500"> <span
-                                            class="badge badge-outline badge-{{ $order->status_color }}">{{ $order->status_name }}
+                                            class="badge badge-outline {{ $order->status_color }}">{{ $order->status_name }}
                                         </span></div>
+
                                     <div class="text-xs text-gray-400">{{ $order->created_at->format('d M Y') }}</div>
                                 </li>
                             @endforeach
@@ -69,12 +70,17 @@
                             <div>
                                 <p><strong>Reseller:</strong> <span x-text="order.reseller.name"></span></p>
                                 <p><strong>Kode Order:</strong> <span x-text="order.order_code"></span></p>
-                                <p><strong>Status:</strong> <span
-                                        class="badge badge-outline badge-{{ $order->status_color }}"
-                                        x-text="order.status_name"></span></p>
+                                <p><strong>Status:</strong> <span :class="['badge', 'badge-outline', order.status_color]"
+                                        x-text="order.status_name">
+                                    </span>
+                                </p>
                                 <p><strong>Tanggal Order:</strong>
                                     {{ \Carbon\Carbon::parse($order->created_at)->format('d M Y') }}</p>
                                 <p><strong>Alamat Pengiriman:</strong> <span x-text="order.shipping_address"></span></p>
+                                <p><strong>Note:</strong>
+                                    <span
+                                        x-text="order.note && order.note.trim() !== '' ? order.note : 'Tidak ada note'"></span>
+                                </p>
                             </div>
 
                             <div class="border-t pt-4">
@@ -94,17 +100,62 @@
                                     </template>
                                 </div>
                             </div>
+                            <div class="border-t pt-4 space-y-2 font-semibold">
+                                <!-- Subtotal -->
+                                <div class="flex justify-between">
+                                    <span>Subtotal</span>
+                                    <span>
+                                        Rp<span
+                                            x-text="order.order_items
+                    .reduce((sum, i) => sum + (i.price_each * i.quantity), 0)
+                    .toLocaleString('id-ID')"></span>
+                                    </span>
+                                </div>
 
-                            <div class="border-t pt-4 flex justify-between font-semibold">
-                                <span>Total</span>
-                                <span>
-                                    Rp<span
-                                        x-text="order.order_items.reduce((sum, i) => sum + (i.price_each * i.quantity), 0).toLocaleString('id-ID')"></span>
-                                </span>
+                                <!-- Ongkir -->
+                                <div class="flex justify-between">
+                                    <span>Ongkir</span>
+                                    <span>
+                                        Rp<span x-text="order.total_shipping.toLocaleString('id-ID')"></span>
+                                    </span>
+                                </div>
+
+                                <!-- Total -->
+                                <div class="border-t pt-2 flex justify-between text-lg font-bold">
+                                    <span>Total</span>
+                                    <span>
+                                        Rp<span
+                                            x-text="(
+                    order.order_items.reduce((sum, i) => sum + (i.price_each * i.quantity), 0)
+                    + order.total_shipping
+                    ).toLocaleString('id-ID')"></span>
+                                    </span>
+                                </div>
+                                <!-- Bukti Pembayaran -->
+                                <div class="border-t pt-4">
+                                    <h3 class="text-md font-semibold mb-2">Metode Pembayaran</h3>
+                                    <div class="bg-gray-50 p-3 rounded-lg border text-center">
+                                        <span class="font-medium text-gray-700" x-text="order.payment_method"></span>
+                                    </div>
+                                    <h3 class="text-md font-semibold mb-2">Bukti Pembayaran</h3>
+
+                                    <div
+                                        class="bg-gray-50 p-3 rounded-lg border flex flex-col sm:flex-row items-center justify-center gap-4 text-center">
+                                        <template x-if="order.payment_proofs">
+                                            <img :src="cloudinaryUrl(order.payment_proofs)" alt="Bukti Pembayaran"
+                                                class="rounded-lg shadow-md max-w-xs">
+                                        </template>
+
+                                        <template x-if="!order.payment_proofs">
+                                            <span class="text-gray-500">Belum dikirim bukti pembayaran</span>
+                                        </template>
+                                    </div>
+                                </div>
                             </div>
 
+
                             <div class="pt-4 text-right">
-                                <button class="btn btn-sm btn-primary" @click="showModal = true">Ubah Status</button>
+                                <button class="btn btn-sm btn-gradient-primary" @click="showModal = true">Ubah Status</button>
                             </div>
                         </div>
                     </div>
@@ -131,8 +182,8 @@
                         </select>
 
                         <div class="flex justify-end space-x-2">
-                            <button type="button" class="btn btn-sm" @click="showModal = false">Batal</button>
-                            <button type="submit" class="btn btn-sm btn-primary">Simpan</button>
+                            <button type="button" class="btn-gradient-neutral" @click="showModal = false">Batal</button>
+                            <button type="submit" class="btn-gradient-primary">Simpan</button>
                         </div>
                     </form>
                 </div>

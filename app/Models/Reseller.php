@@ -1,32 +1,21 @@
 <?php
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class Reseller extends Authenticatable
 {
     use Notifiable;
-
-    protected $fillable = ['name', 'email', 'password', 'phone', 'pfp_path', 'plan_type'];
+    use SoftDeletes;
+    
+    protected $fillable = ['name', 'email', 'password', 'phone', 'pfp_path', 'google_id', 'plan_id'];
 
     protected $hidden = ['password', 'remember_token'];
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
-    const PLAN_STANDARD = 0;
-    const PLAN_PRO = 1;
-
-    public static $planLabels = [
-        self::PLAN_STANDARD => 'Standard',
-        self::PLAN_PRO => 'Pro',
-    ];
-
-    public function getPlanNameAttribute()
-    {
-        return self::$planLabels[$this->plan_type] ?? 'Unknown';
-    }
 
     public function orders()
     {
@@ -51,5 +40,17 @@ class Reseller extends Authenticatable
     public function addresses()
     {
         return $this->hasMany(Address::class);
+    }
+    public function orderSubscriptions()
+    {
+        return $this->hasMany(OrderSubscription::class);
+    }
+    public function plan()
+    {
+        return $this->belongsTo(Plan::class);
+    }
+    public function webRating()
+    {
+        return $this->hasMany(WebRating::class, 'reseller_id', 'reseller_id');
     }
 }

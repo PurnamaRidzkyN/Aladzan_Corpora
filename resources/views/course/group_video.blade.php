@@ -14,7 +14,7 @@
             <h1 class="text-2xl font-bold">Grup Video Pembelajaran</h1>
 
             @if (auth('admin')->check())
-                <button onclick="openModal('add')" class="btn btn-gradient-primary">+ Tambah Grup</button>
+                <button onclick="openModal('add')" class="btn btn-primary">+ Tambah Grup</button>
             @endif
         </div>
 
@@ -41,10 +41,10 @@
                             <div class="flex justify-between items-center mt-4">
                                 @if (auth('admin')->check())
                                     <a href="{{ route('group.course.video', $group->id) }}"
-                                        class="text-blue-600 hover:underline text-sm">Lihat Video</a>
+                                        class="btn-gradient-primary">Lihat Video</a>
                                 @elseif (auth('reseller')->check())
                                     <a href="{{ route('reseller.course.video', $group->id) }}"
-                                        class="text-blue-600 hover:underline text-sm">Lihat Video</a>
+                                        class="btn-gradient-primary">Lihat Video</a>
                                 @endif
 
                                 @if (auth('admin')->check())

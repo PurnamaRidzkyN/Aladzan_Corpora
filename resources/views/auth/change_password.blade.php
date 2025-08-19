@@ -13,8 +13,12 @@
     @endif
     <div class="flex items-center justify-center min-h-screen">
         <div class="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-            <h2 class="text-2xl font-bold mb-6 text-center text-gray-800">Ubah kata sandi </h2>
+            <div class="flex flex-col items-center mb-4">
+            <img src="{{ asset('storage/logo2.png') }}" alt="ALADZAN CORPORA Logo"
+                class="w-48 h-auto object-contain mb-2">
+            <h2 class="text-xl font-semibold text-gray-800 text-center">Rubah Kata Sandi</h2>
 
+        </div>
             <form method="POST" action="{{ route('change.password.post') }}">
                 @csrf
                 @method('POST')

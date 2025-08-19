@@ -1,12 +1,42 @@
 @extends('layouts.app')
 
+@section('title', 'Toko - ' . $shop->name)
 @section('content')
     <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Toko Header -->
-        <div class="mb-6 text-center">
-            <h1 class="text-2xl font-bold text-gray-800">{{ $shop->name }}</h1>
-            <p class="text-sm text-gray-500">{{ $shop->description ?? 'Tidak ada deskripsi toko.' }}</p>
+    <!-- Container utama -->
+<div class="bg-blue-50 py-8 px-4 rounded-xl shadow-inner space-y-8">
+
+    <!-- Header toko -->
+    <div class="flex items-center gap-4">
+        <!-- Gambar toko -->
+        <img src="{{ cloudinary_url($shop->img_path ?? 'productDefault_mpgglw') }}" alt="Foto Toko"
+            class="w-24 h-24 rounded-full object-cover border-4 border-blue-300 shadow">
+
+        <!-- Info toko -->
+        <div class="text-left">
+            <h1 class="text-2xl md:text-3xl font-extrabold text-gray-800">{{ $shop->name }}</h1>
+            <p class="text-sm text-gray-600 mt-1 max-w-md">
+                {{ $shop->description ?? 'Tidak ada deskripsi toko.' }}
+            </p>
         </div>
+    </div>
+
+    <!-- Video toko di bawah header -->
+  @if ($shop->video_path !== null)
+    <div class="w-full max-w-2xl mx-auto rounded-xl overflow-hidden shadow-md">
+        <div class="relative" style="padding-bottom: 56.25%;">
+            <iframe class="absolute top-0 left-0 w-full h-full rounded-xl"
+                src="https://www.youtube-nocookie.com/embed/{{ $shop->video_path  }}?rel=0&modestbranding=1&showinfo=0&autoplay=0"
+                title="Video Toko"
+                frameborder="0"
+                allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+    @endif
+</div>
 
         <!-- Filter & Sort -->
         <div class="flex flex-col gap-4 mb-6">

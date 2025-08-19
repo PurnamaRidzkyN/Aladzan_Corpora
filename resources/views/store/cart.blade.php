@@ -76,7 +76,7 @@
                     <div class="text-lg font-semibold text-gray-700">
                         Total Dipilih: <span id="totalHarga" class="text-primary font-bold">Rp0</span>
                     </div>
-                    <button type="submit" class="btn btn-primary w-full md:w-auto">Lanjut ke Checkout</button>
+                    <button type="submit" class="btn btn-gradient-primary w-full md:w-auto">Lanjut ke Checkout</button>
                 </div>
             </div>
 
@@ -86,7 +86,7 @@
                     <div class="text-lg font-semibold text-gray-700">
                         Total Dipilih: <span id="totalHargaDesktop" class="text-primary font-bold">Rp0</span>
                     </div>
-                    <button type="submit" class="btn btn-primary px-6 py-2 text-base">Lanjut ke Checkout</button>
+                    <button type="submit" class="btn btn-gradient-primary px-6 py-2 text-base">Lanjut ke Checkout</button>
                 </div>
             </div>
         </form>

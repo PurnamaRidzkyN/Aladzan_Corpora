@@ -46,7 +46,7 @@
         <div class="flex justify-between items-center">
             <h1 class="text-2xl font-bold">Video Pembelajaran</h1>
             @auth('admin')
-                <button class="btn btn-gradient-primary"
+                <button class="btn btn-primary"
                     @click="openModal = true; editMode = false; form = { id: null, title: '', description: '', thumbnail: null, video: null, previewThumbnail: '', previewVideo: '' }">
                     Tambah Video
                 </button>

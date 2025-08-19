@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Rating;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use App\Helpers\NotificationHelper;
+use App\Models\Order;
 
 class ReviewController extends Controller
 {
@@ -14,7 +16,7 @@ class ReviewController extends Controller
     public function index($slug)
     {
         $product = Product::where('slug', $slug)
-            ->with(['review', 'shop','rating','categories'])
+            ->with(['review', 'shop', 'rating', 'categories'])
             ->first();
 
         if (!$product) {
@@ -22,7 +24,7 @@ class ReviewController extends Controller
         }
 
         // Ambil semua ulasan untuk produk ini, hanya yang ada komentarnya
-        $ratings = Rating::with(['reseller', 'product'])
+        $ratings = Rating::with(['reseller', 'product', 'admin'])
             ->where('product_id', $product->id)
             ->whereNotNull('comment')
             ->latest()
@@ -30,7 +32,7 @@ class ReviewController extends Controller
 
         $averageRating = round($ratings->avg('rating'), 1);
         $totalReviews = $ratings->count();
-        return view('admin.management_products.review.index', compact('ratings', 'averageRating', 'totalReviews','product'));
+        return view('admin.management_products.review.index', compact('ratings', 'averageRating', 'totalReviews', 'product'));
     }
     public function review(Request $request)
     {
@@ -40,15 +42,17 @@ class ReviewController extends Controller
             'comment' => 'nullable|string',
             'order_id' => 'required|exists:orders,id',
         ]);
-
+        $orderCode = Order::findOrFail($validated['order_id'])->order_code;
+        $reseller = auth()->user();
         Rating::create([
             'product_id' => $validated['product_id'],
-            'reseller_id' => auth()->id(),
+            'reseller_id' => $reseller->id,
             'order_id' => $validated['order_id'],
             'rating' => $validated['rating'],
             'comment' => $validated['comment'],
             'comment_at' => now(),
         ]);
+        NotificationHelper::notifyAdmins('Ulasan Baru', 'Pesanan #' . $orderCode . ' telah diulas oleh reseller' . $reseller->name . '.', route('reviews.show', ['slug' => Product::find($validated['product_id'])->slug]));
         return redirect()->back()->with('success', 'Terima kasih telah memberikan rating.');
     }
 
@@ -57,7 +61,10 @@ class ReviewController extends Controller
         $rating = Rating::findOrFail($id);
         $rating->reply = $request->input('reply');
         $rating->reply_at = now();
+        $rating->admin_id = auth('admin')->user()->id;
         $rating->save();
+
+        NotificationHelper::notifyReseller($rating->reseller, 'Balasan Ulasan', 'Pesanan #' . $rating->order->order_code . ' telah mendapatkan balasan dari admin.', route('order.detail', ['order_code' => $rating->order->order_code]));
         return redirect()->back()->with('success', 'Berhasil menambahkan balasan.');
     }
 }

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Beranda')
+@section('title', 'Detail Produk')
 
 @section('content')
     <!-- Produk Utama -->
@@ -186,29 +186,30 @@
                                     this.openAssetModal = true;
                                 }
                             },
-                       downloadSelected() {
-    fetch("{{ route('media.downloadSelected') }}", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": '{{ csrf_token() }}'
-        },
-        body: JSON.stringify({ files: this.selectedFiles })
-    })
-    .then(res => res.json())
-    .then(data => {
-        data.files.forEach(file => {
-            const link = document.createElement('a');
-            link.href = file.url;
-            link.download = file.name; 
-            console.log(file.name);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        });
-    });
-}
-,
+                            downloadSelected() {
+                                fetch("{{ route('media.downloadSelected') }}", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRF-TOKEN": '{{ csrf_token() }}'
+                                        },
+                                        body: JSON.stringify({
+                                            files: this.selectedFiles
+                                        })
+                                    })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        data.files.forEach(file => {
+                                            const link = document.createElement('a');
+                                            link.href = file.url;
+                                            link.download = file.name;
+                                            console.log(file.name);
+                                            document.body.appendChild(link);
+                                            link.click();
+                                            document.body.removeChild(link);
+                                        });
+                                    });
+                            },
                             copyDescription(text) {
                                 navigator.clipboard.writeText(text).then(() => {
                                     alert('Deskripsi berhasil disalin!');
@@ -231,15 +232,22 @@
                         <a href="" class="text-blue-600 hover:underline ml-1">{{ $category->name }}</a>
                     @endforeach
                 </div>
+
                 <a href="{{ route('shop.show', $product->shop->slug) }}"
-                    class="flex items-center gap-2 px-3 py-2 rounded-lg border border-sky-200 bg-white shadow-sm hover:shadow-md transition">
+                    class="flex items-center gap-3 px-3 py-2 rounded-lg border border-sky-200 bg-white shadow-sm hover:shadow-md transition">
+
+                    <!-- Gambar toko -->
+                    <img src="{{ cloudinary_url($product->shop->img_path ?? 'productDefault_mpgglw') }}" alt="Logo Toko"
+                        class="w-10 h-10 rounded-full object-cover border border-blue-200">
+
+                    <!-- Info toko -->
                     <div>
                         <p class="text-sm font-semibold text-gray-800 leading-4">{{ $product->shop->name }}</p>
                         <p class="text-xs text-gray-500">Lihat toko</p>
                     </div>
                 </a>
-
             </div>
+
 
             <h1 class="text-2xl font-bold text-gray-800">{{ $product->name }}</h1>
             @if ($rating && $rating->rating_count > 0)
@@ -416,6 +424,22 @@
                     <i class="fa-regular fa-heart text-base"></i> Simpan Produk Ini
                 </button>
             </form>
+            @php
+                $wa = $wa ? preg_replace('/^0/', '62', $wa) : null;
+
+                $productUrl = route('product.show', $product->slug);
+                $defaultMessage = "Halo, saya ingin bertanya tentang produk *{$product->name}*. Produk di sini: {$productUrl}";
+                $waLink = $wa ? "https://wa.me/{$wa}?text=" . urlencode($defaultMessage) : null;
+            @endphp
+
+            @if ($waLink)
+                <a href="{{ $waLink }}" target="_blank"
+                    class="btn-gradient-warning w-full mt-2 flex items-center justify-center gap-2 rounded-xl">
+                    <i class="fab fa-whatsapp text-base"></i> Tanya Produk Ini
+                </a>
+            @else
+                <span class="text-red-500">Nomor WhatsApp belum tersedia.</span>
+            @endif
 
         </div>
     </main>
@@ -448,23 +472,48 @@
             <div class="text-sm text-gray-500">Dari {{ $rating->rating_count ?? 0 }} ulasan</div>
         </div>
         <div class="space-y-6">
-            @forelse($product->review as $review)
+            @forelse($latestReviews as $review)
                 <div class="bg-white p-5 rounded-xl shadow-sm border">
+                    {{-- Header user --}}
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
-                            <div
-                                class="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-sm font-bold text-blue-800">
-                                {{ strtoupper(substr($review->reseller->name, 0, 2)) }}
-                            </div>
+                            <!-- Avatar -->
+                            <img src="{{ cloudinary_url($review->reseller->pfp_path, 'image', 'w_200,h_200,c_fill') }}"
+                                alt="{{ $review->reseller->name }}" class="w-8 h-8 roundedc-full object-cover">
+
+                            <!-- Nama Reseller -->
                             <span class="font-semibold text-gray-800 text-sm">{{ $review->reseller->name }}</span>
                         </div>
+
+                        <!-- Rating -->
                         <div class="text-yellow-400 text-sm">
                             {{ str_repeat('★', $review->rating) }}{{ str_repeat('☆', 5 - $review->rating) }}
                         </div>
                     </div>
+
+                    {{-- Komentar user --}}
                     <p class="text-gray-700 text-sm leading-relaxed">
                         {{ $review->comment }}
                     </p>
+                    <p class="text-xs text-gray-400">
+                        {{ $review->reseller->name ?? 'user' }} • {{ $review->created_at->format('d M Y') }}
+                    </p>
+                    {{-- Balasan admin --}}
+                    @if (!empty($review->reply))
+                        <div class="mt-3 pl-4 border-l-4 border-blue-300 bg-blue-50 p-3 rounded-md">
+                            <div class="flex items-center gap-2 mb-1">
+
+                                <span class="font-semibold text-blue-800 text-xs">Balasan Admin
+                                    {{ $review->admin->name }}</span>
+                            </div>
+                            <p class="text-gray-700 text-sm">{{ $review->reply }}</p>
+                            @if ($review->reply_at)
+                                <span class="text-gray-500 text-xs">
+                                    Dibalas pada {{ \Carbon\Carbon::parse($review->reply_at)->format('d M Y H:i') }}
+                                </span>
+                            @endif
+                        </div>
+                    @endif
                 </div>
             @empty
                 <p class="text-sm text-gray-500">Belum ada ulasan.</p>
@@ -478,23 +527,23 @@
 
     <!-- Produk Serupa -->
     <section class="max-w-6xl mx-auto px-6 mt-12">
-        <h2 class="text-xl font-semibold text-gray-800 mb-4">Produk Serupa</h2>
+        <h2 class="text-xl font-semibold text-gray-800 mb-4">Produk dari toko yang sama</h2>
         <div class="overflow-x-auto">
             <div class="flex gap-4">
-                @foreach ($products as $product)
+                @foreach ($relatedProducts as $relatedProduct)
                     <div
                         class="flex-none w-56 bg-white border border-blue-100 rounded-xl p-3 shadow-sm hover:shadow-md hover:bg-blue-50 transition">
-                        <a href="{{ route('product.show', $product->slug) }}">
-                            <img src="{{ cloudinary_url($product->media->first()?->file_path ?? 'productDefault_mpgglw') }}"
-                                alt="{{ $product->name }}" class="w-full h-32 object-cover rounded-lg mb-2" />
+                        <a href="{{ route('product.show', $relatedProduct->slug) }}">
+                            <img src="{{ cloudinary_url($relatedProduct->media->first()?->file_path ?? 'productDefault_mpgglw') }}"
+                                alt="{{ $relatedProduct->name }}" class="w-full h-32 object-cover rounded-lg mb-2" />
                         </a>
 
-                        <h3 class="text-sm font-semibold truncate text-blue-900 mb-1">{{ $product->name }}</h3>
+                        <h3 class="text-sm font-semibold truncate text-blue-900 mb-1">{{ $relatedProduct->name }}</h3>
 
                         @php
-                            $avg = round($product->rating->rating ?? 0);
-                            $avgDecimal = number_format($product->rating->rating ?? 0, 1);
-                            $count = $product->rating->rating_count ?? 0;
+                            $avg = round($relatedProduct->rating->rating ?? 0);
+                            $avgDecimal = number_format($relatedProduct->rating->rating ?? 0, 1);
+                            $count = $relatedProduct->rating->rating_count ?? 0;
                         @endphp
 
                         <div>
@@ -511,23 +560,23 @@
 
                             <!-- Rating & terjual -->
                             <div class="text-[11px] text-slate-400">
-                                ({{ $avgDecimal }}) · {{ $product->sold ?? 0 }} terjual
+                                ({{ $avgDecimal }}) · {{ $relatedProduct->sold ?? 0 }} terjual
                             </div>
                         </div>
 
                         <p class="text-[11px] text-slate-500 mt-1 truncate">
-                            oleh <span class="font-semibold text-blue-700">{{ $product->shop->name }}</span>
+                            oleh <span class="font-semibold text-blue-700">{{ $relatedProduct->shop->name }}</span>
                         </p>
 
-                        @if ($product->variants->count())
+                        @if ($relatedProduct->variants->count())
                             <p class="text-blue-600 font-bold text-sm mt-1">
-                                Rp {{ number_format($product->variants->first()->price, 0, ',', '.') }}
+                                Rp {{ number_format($relatedProduct->variants->first()->price, 0, ',', '.') }}
                             </p>
                         @else
                             <p class="text-slate-400 text-sm">Belum ada harga</p>
                         @endif
 
-                        <a href="{{ route('product.show', $product->slug) }}"
+                        <a href="{{ route('product.show', $relatedProduct->slug) }}"
                             class="btn btn-sm btn-gradient-primary w-full mt-2">
                             Lihat Detail
                         </a>
@@ -587,22 +636,48 @@
             @foreach ($product->review as $review)
                 <div x-show="selectedStar === 0 || selectedStar === {{ $review->rating }}"
                     class="bg-white p-4 rounded-xl shadow-sm border mb-4">
+
+                    {{-- Header user --}}
                     <div class="flex items-center justify-between mb-2">
                         <div class="flex items-center gap-2">
                             <div
                                 class="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center text-sm font-bold text-blue-800">
                                 {{ strtoupper(substr($review->reseller->name ?? 'AN', 0, 2)) }}
                             </div>
-                            <span
-                                class="font-semibold text-gray-800 text-sm">{{ $review->reseller->name ?? 'Anonim' }}</span>
+                            <span class="font-semibold text-gray-800 text-sm">
+                                {{ $review->reseller->name ?? 'Anonim' }}
+                            </span>
                         </div>
                         <div class="text-yellow-400 text-sm">
                             {{ str_repeat('★', $review->rating) }}{{ str_repeat('☆', 5 - $review->rating) }}
                         </div>
                     </div>
-                    <p class="text-gray-700 text-sm leading-relaxed">{{ $review->comment }}</p>
+
+                    {{-- Komentar user --}}
+                    <p class="text-gray-700 text-sm leading-relaxed">{{ $review->comment }} </p>
+                    <p class="text-xs text-gray-400">
+                        {{ $review->reseller->name ?? 'user' }} • {{ $review->created_at->format('d M Y') }}
+                    </p>
+                    {{-- Balasan admin --}}
+                    @if (!empty($review->reply))
+                        <div class="mt-3 pl-4 border-l-4 border-blue-300 bg-blue-50 p-3 rounded-md">
+                            <div class="flex items-center gap-2 mb-1">
+
+                                <span class="font-semibold text-blue-800 text-xs">Balasan Admin
+                                    {{ $review->admin->name }}</span>
+                            </div>
+                            <p class="text-gray-700 text-sm">{{ $review->reply }}</p>
+                            @if ($review->reply_at)
+                                <span class="text-gray-500 text-xs">
+                                    Dibalas pada {{ \Carbon\Carbon::parse($review->reply_at)->format('d M Y H:i') }}
+                                </span>
+                            @endif
+                        </div>
+                    @endif
+
                 </div>
             @endforeach
+
 
 
         </div>

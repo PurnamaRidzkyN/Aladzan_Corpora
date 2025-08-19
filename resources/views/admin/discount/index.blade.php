@@ -71,7 +71,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="3" class="text-center text-gray-500 py-6">
+                                    <td colspan="7" class="text-center align-middle text-gray-500 py-6">
                                         Belum ada diskon.
                                     </td>
                                 </tr>

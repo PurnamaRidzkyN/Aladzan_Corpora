@@ -10,12 +10,15 @@ class CreateProductsAndGroupsTable extends Migration
         Schema::create('shops', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('img_path')->nullable();
+            $table->string('video_path')->nullable();
             $table->string('slug')->unique();
             $table->text('description')->nullable();
             $table->integer('zipcode');
             $table->string('city');
             $table->string('sub_district_id');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('products', function (Blueprint $table) {
@@ -25,6 +28,7 @@ class CreateProductsAndGroupsTable extends Migration
             $table->string('weight')->nullable();
             $table->foreignId('shop_id')->constrained('shops')->onDelete('cascade');
             $table->string('slug')->unique();
+            $table->softDeletes();
             $table->timestamps();
         });
         Schema::create('product_media', function (Blueprint $table) {

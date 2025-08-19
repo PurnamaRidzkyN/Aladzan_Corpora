@@ -20,4 +20,8 @@ class Admin extends Authenticatable
     {
         return $this->hasMany(Rating::class);
     }
+    public function activityLogs()
+    {
+        return $this->hasMany(AdminActivityLog::class, 'admin_id');
+    }
 }

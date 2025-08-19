@@ -73,14 +73,14 @@
                     </div>
                 </template>
 
-                <!-- QRIS -->
+                {{-- <!-- QRIS -->
                 <template x-if="selected.type === 'qris'">
                     <div class="text-center space-y-2">
                         <img src="https://via.placeholder.com/180x180.png?text=QRIS" alt="QRIS"
                             class="mx-auto rounded-md">
                         <p class="text-sm text-gray-700">Scan kode QR di atas dengan aplikasi pembayaran favorit Anda.</p>
                     </div>
-                </template>
+                </template> --}}
 
                 <!-- eWallet -->
                 <template x-if="selected.type === 'ewallet'">
@@ -116,14 +116,21 @@
                 </div>
 
                 <!-- Langkah Pembayaran -->
-                <div class="bg-white p-4 rounded-xl shadow border border-gray-200">
+                <div class="bg-white p-4 rounded-xl shadow border border-gray-200" x-show="selected">
                     <p class="text-sm text-gray-600 mb-3">Langkah-langkah:</p>
                     <ol class="list-decimal list-inside text-sm text-gray-700 space-y-1">
-                        <li>Pilih metode pembayaran.</li>
-                        <li>Lakukan transfer / scan QR / masukkan info kartu.</li>
-                        <li>Tunggu sistem mendeteksi pembayaran Anda.</li>
+                        <template x-for="step in selected.steps" :key="step">
+                            <li x-text="step"></li>
+                        </template>
                     </ol>
                 </div>
+                @if ($order->payment_proofs)
+                    <div class="bg-green-50 rounded-xl p-4 shadow border border-green-200">
+                        <p class="text-sm font-semibold text-green-700 mb-2">Bukti Pembayaran:</p>
+                        <img src="{{ cloudinary_url($order->payment_proofs, 'image', 'w_500,q_auto') }}"
+                            alt="Bukti Pembayaran" class="w-full max-w-xs rounded-lg border border-green-300 shadow-sm">
+                    </div>
+                @endif
 
                 <div class="flex justify-between md:justify-end gap-2 pt-4 border-t border-gray-200">
                     <a href="{{ route('order.history') }}" class="btn btn-gradient-neutral">Bayar Nanti</a>
@@ -132,18 +139,18 @@
 
             </div>
 
+
             <div x-show="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
                 x-transition>
                 <div @click.outside="showModal = false" class="bg-white p-6 rounded-lg w-full max-w-md shadow-lg">
                     <h2 class="text-xl font-semibold mb-4">Upload Bukti Pembayaran</h2>
 
                     <!-- Form -->
-                    <form method="POST" action="{{ route('payment.confirm',$order->order_code) }}"
+                    <form method="POST" action="{{ route('payment.confirm', $order->order_code) }}"
                         enctype="multipart/form-data">
                         @csrf
 
-                        <input type="hidden" name="selected_method_id" :value="selected?.id">
-
+                        <input type="hidden" name="selected_method" :value="selected?.type">
                         <!-- Upload Screenshot -->
                         <div class="mb-4">
                             <label class="block text-sm font-medium mb-1">Upload Bukti (Screenshot)</label>

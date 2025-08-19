@@ -6,7 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Rating extends Model
 {
-    protected $fillable = ['product_id','order_id' ,'reseller_id', 'rating', 'admin_id', 'comment', 'reply','reply_at'];
+    protected $casts = [
+        'reply_at' => 'datetime',
+    ];
+
+    protected $fillable = ['product_id', 'order_id', 'reseller_id', 'rating', 'admin_id', 'comment', 'reply', 'reply_at'];
 
     public function product()
     {
@@ -16,7 +20,7 @@ class Rating extends Model
     {
         return $this->belongsTo(Admin::class);
     }
- 
+
     public function reseller()
     {
         return $this->belongsTo(Reseller::class);

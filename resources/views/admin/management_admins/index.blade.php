@@ -45,9 +45,9 @@
                                     <td class="admin-email">{{ $admin->email }}</td>
                                     <td>
                                         @if ($admin->is_super_admin)
-                                            <span class="badge badge-success">Ya</span>
+                                            <span class="badge badge-success text-white">Ya</span>
                                         @else
-                                            <span class="badge badge-ghost">Tidak</span>
+                                            <span class="badge badge-warning text-white">Tidak</span>
                                         @endif
                                     </td>
                                     <td class="text-center space-x-2">

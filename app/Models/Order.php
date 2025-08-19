@@ -8,7 +8,7 @@ class Order extends Model
 {
     protected $fillable = ['order_code', 'reseller_id', 'total_price', 'status', 'shipping_address', 'note', 'total_shipping', 'is_paid_at', 'is_processed_at', 'is_shipped_at', 'is_done_at', 'is_cancelled_at', 'payment_proofs', 'payment_method'];
 
-    protected $appends = ['status_name'];
+    protected $appends = ['status_name','status_color'];
     public function getStatusNameAttribute()
     {
         $labels = [
@@ -23,12 +23,12 @@ class Order extends Model
     public function getStatusColorAttribute()
     {
         return match ($this->status) {
-            4 => 'error', // Cancel
-            3 => 'success', // Selesai
-            2 => 'info', // Dikirim
-            1 => 'warning', // Diproses
-            0 => 'secondary', // Belum dibayar
-            default => 'secondary',
+            4 => 'badge-error', // Cancel
+            3 => 'badge-success', // Selesai
+            2 => 'badge-info', // Dikirim
+            1 => 'badge-warning', // Diproses
+            0 => 'badge-secondary', // Belum dibayar
+            default => 'badge-neutral',
         };
     }
 

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
+use App\Helpers\AdminActivityHelper;
 
 class CategoryController extends Controller
 {
@@ -29,7 +30,7 @@ class CategoryController extends Controller
 
         // Simpan data produk
         Category::create($request->all());
-
+        AdminActivityHelper::log('CREATE', 'categories', null, 'Menambahkan kategori: ' . $request->name);
         // Redirect ke halaman kategori
         return redirect()->route('categories.index')->with('success', 'Kategori berhasil ditambahkan.');
     }
@@ -43,8 +44,9 @@ class CategoryController extends Controller
     {
         // Hapus produk
         $category = Category::findOrFail($id);
-        $category->delete();
+        AdminActivityHelper::log('DELETE', 'categories', $category->id, 'Menghapus kategori: ' . $category->name);
 
+        $category->delete();
         // Redirect ke halaman kategori
         return redirect()->route('categories.index')->with('success', 'Kategori berhasil dihapus.');
     }
