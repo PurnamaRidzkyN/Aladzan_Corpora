@@ -1,5 +1,5 @@
 <?php
-namespace App\Helpers;
+namespace App\helpers;
 
 use App\Models\Admin;
 use App\Models\Reseller;
