@@ -16,7 +16,7 @@
                 👥 Tentang Kami
             </h2>
             <p class="mt-2 text-gray-700">
-                <strong>Y-Aladzan.com</strong> – Platform Reseller Langsung dari Pabrik
+                <strong>Y-Aladzan.my.id</strong> – Platform Reseller Langsung dari Pabrik
             </p>
         </section>
 

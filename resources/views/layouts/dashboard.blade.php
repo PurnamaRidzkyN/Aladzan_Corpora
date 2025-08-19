@@ -146,8 +146,9 @@
                 <!-- Kontak -->
                 <div>
                     <h4 class="footer-title">Customer Service</h4>
-                    <p class="text-sm">Email: <a href="mailto:support@resellerhub.com"
-                            class="link link-hover text-blue-600">support@resellerhub.com</a></p>
+                    <p class="text-sm">Email: <a href="mailto:y.aladzan.92@gmail.com"
+                            class="link link-hover text-blue-600">y.aladzan.92@gmail.com
+                        </a></p>
                     <div class="mt-3 flex space-x-3 text-xl">
                         <a href="#"><i class="fab fa-facebook-f hover:text-blue-600"></i></a>
                         <a href="#"><i class="fab fa-instagram hover:text-pink-500"></i></a>
@@ -157,7 +158,7 @@
             </div>
 
             <div class="border-t border-gray-300 text-center py-4 text-sm text-gray-500">
-                &copy; {{ date('Y') }} ResellerHub. All rights reserved.
+                &copy; {{ date('Y') }} Y-Aladzan. All rights reserved.
             </div>
         </footer>
     </div>

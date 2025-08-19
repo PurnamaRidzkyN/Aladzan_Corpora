@@ -138,14 +138,14 @@ Route::middleware([AdminMiddleware::class])->group(function () {
             Route::get('/settings', [ContactSettingController::class, 'index'])->name('settings.index');
             Route::post('/settings', [ContactSettingController::class, 'store'])->name('settings.store');
         });
-         Route::get('/resellers', [ResellerController::class, 'resellerAccount'])->name('reseller.index');
-            Route::delete('/resellers/{id}', [ResellerController::class, 'resellerDestroy'])->name('reseller.destroy');
-            Route::delete('/resellers/force-delete/{id}', [ResellerController::class, 'resellerForceDelete'])->name('reseller.forceDelete');
-            Route::post('/resellers/restore/{id}', [ResellerController::class, 'resellerRestore'])->name('reseller.restore');
-            Route::get('/upgrade_account', [ResellerController::class, 'pending'])->name('admin.orders.pending');
-            Route::patch('/upgrade_account/{order}/approve', [ResellerController::class, 'approve'])->name('admin.orders.approve');
-            Route::patch('/upgrade_account/{order}/reject', [ResellerController::class, 'reject'])->name('admin.orders.reject');
-           
+        Route::get('/resellers', [ResellerController::class, 'resellerAccount'])->name('reseller.index');
+        Route::delete('/resellers/{id}', [ResellerController::class, 'resellerDestroy'])->name('reseller.destroy');
+        Route::delete('/resellers/force-delete/{id}', [ResellerController::class, 'resellerForceDelete'])->name('reseller.forceDelete');
+        Route::post('/resellers/restore/{id}', [ResellerController::class, 'resellerRestore'])->name('reseller.restore');
+        Route::get('/upgrade_account', [ResellerController::class, 'pending'])->name('admin.orders.pending');
+        Route::patch('/upgrade_account/{order}/approve', [ResellerController::class, 'approve'])->name('admin.orders.approve');
+        Route::patch('/upgrade_account/{order}/reject', [ResellerController::class, 'reject'])->name('admin.orders.reject');
+
         Route::get('/notifications', [NotificationController::class, 'index'])->name('admin.notifications');
 
         Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsReadAdmin'])->name('admin.notifications.read');
@@ -173,7 +173,7 @@ Route::middleware([ResellerMiddleware::class])->group(function () {
 
     Route::get('/payment/{order_code}', [PaymentController::class, 'payment'])->name('payment');
     Route::post('/payment/{order_code}/confirm', [PaymentController::class, 'paymentConfirm'])->name('payment.confirm');
-Route::post('/order/cancel', [PaymentController::class, 'orderCancel'])->name('order.cancel');
+    Route::post('/order/cancel', [PaymentController::class, 'orderCancel'])->name('order.cancel');
     Route::get('/profil', function () {
         return view('store.profile.profile');
     })->name('profile');
@@ -199,3 +199,5 @@ Route::post('/order/cancel', [PaymentController::class, 'orderCancel'])->name('o
 
     Route::post('/media/download', [MediaController::class, 'downloadSelected'])->name('media.downloadSelected');
 });
+
+Route::post('/notifications/read-all', [NotificationController::class, 'markAllNotificationsAsRead'])->name('notifications.readAll');

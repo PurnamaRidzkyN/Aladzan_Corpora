@@ -134,11 +134,18 @@ class AuthController extends Controller
         DB::table('password_reset_tokens')
             ->where('created_at', '<', now()->subMinutes(5))
             ->delete();
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:6|confirmed',
-            'token' => 'required',
-        ]);
+        $request->validate(
+            [
+                'email' => 'required|email',
+                'password' => 'required|min:6|confirmed',
+                'token' => 'required',
+                'g-recaptcha-response' => 'required|captcha',
+            ],
+            [
+                'g-recaptcha-response.required' => 'Harap centang reCAPTCHA terlebih dahulu.',
+                'g-recaptcha-response.captcha' => 'Verifikasi reCAPTCHA gagal. Silakan coba lagi.',
+            ],
+        );
 
         $record = DB::table('password_reset_tokens')->where('email', $request->email)->first();
 
