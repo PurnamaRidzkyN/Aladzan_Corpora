@@ -27,22 +27,28 @@ class DatabaseSeeder extends Seeder
         Plan::create([
             'name' => 'Standard',
             'description' => 'Dapat belanja saja',
-            'price' => 50000, 
+            'price' => 0, 
             'currency' => 'IDR',
             'duration_days' => 0,
         ]);
         Plan::create([
             'name' => 'Pro',
             'description' => 'Dapat mempunyai link komunitas, belanja, dan video pembelajaran cara berjualan',
-            'price' => 100000, 
+            'price' => 150000, 
             'currency' => 'IDR',
             'duration_days' => 00, 
         ]);
 
         Admin::create([
-            'name' => 'Contoh Reseller',
-            'email' => 'admin@gmail.com',
-            'password' => bcrypt('password123'),
+            'name' => 'adzani ksw',
+            'email' => 'adzanikusumantapraja.92@gmail.com',
+            'password' => bcrypt('adzanikusumantapraja'),
+            'email_verified_at' => now(),
+        ]);
+        Admin::create([
+            'name' => 'Purnama',
+            'email' => 'purnamanugraha.492@gmail.com',
+            'password' => bcrypt('purnamanugraha'),
             'email_verified_at' => now(),
         ]);
         Reseller::create([
