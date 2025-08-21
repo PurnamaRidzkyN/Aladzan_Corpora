@@ -1,6 +1,13 @@
 @extends('layouts.app')
 
 @section('title', 'Produk Katalog')
+@section('meta_description', 'Hasil pencarian produk ALADZAN untuk reseller. Temukan berbagai barang berkualitas untuk
+    dijual kembali.')
+
+@section('head_extra')
+<meta name="robots" content="noindex, follow">
+@endsection
+
 @section('content')
     <div x-data="{ sort: '{{ request('sort', 'latest') }}' }">
         <!-- Judul Search / Kategori -->

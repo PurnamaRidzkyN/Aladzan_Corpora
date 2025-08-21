@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Detail Produk')
+@section('title', 'Detail Produk' . ($product->name ?? ''))
+@section('meta_description', $product->description ?? 'Jual kembali produk berkualitas dari ALADZAN dan dapatkan keuntungan menarik. Mulai bisnis reseller Anda sekarang.')
 
 @section('content')
     <!-- Produk Utama -->

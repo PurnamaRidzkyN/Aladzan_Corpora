@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Beranda')
+@section('meta_description', 'Gabung dengan ALADZAN dan mulai menjadi reseller sekarang. Temukan berbagai produk berkualitas untuk dijual kembali dan raih keuntungan maksimal.')
 
 @section('content')
     <div x-data="ratingModal(@json($order ? $order->id : null))">

@@ -36,6 +36,10 @@ use App\Http\Controllers\AdminActivityController;
 use App\Http\Controllers\ContactSettingController;
 use App\Http\Controllers\DashboardResellerController;
 use App\Http\Middleware\SuperAdminMiddleware;
+use Spatie\Sitemap\Sitemap;
+use Spatie\Sitemap\Tags\Url;
+use App\Models\Product;
+use App\Models\Shop;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,6 +103,36 @@ Route::post('/staff-only', [AuthController::class, 'loginAdmin'])->name('login.a
 */
 Route::middleware([AdminMiddleware::class])->group(function () {
     Route::prefix('staff-only')->group(function () {
+        Route::get('/generate-sitemap', function () {
+            $sitemap = Sitemap::create()
+                ->add(Url::create('/')->setPriority(1.0)) // Home
+                ->add(Url::create('/toko')->setPriority(0.8)); // Katalog umum
+
+            // Product detail
+            $products = Product::all();
+            foreach ($products as $product) {
+                $sitemap->add(
+                    Url::create('/product/' . $product->slug)
+                        ->setPriority(0.9)
+                        ->setLastModificationDate($product->updated_at),
+                );
+            }
+
+            // Toko/reseller
+            $shops = Shop::all();
+            foreach ($shops as $shop) {
+                $sitemap->add(
+                    Url::create('/shop/' . $shop->slug)
+                        ->setPriority(0.7)
+                        ->setLastModificationDate($shop->updated_at),
+                );
+            }
+
+            $sitemap->writeToFile(public_path('sitemap.xml'));
+
+            return 'Sitemap berhasil dibuat!';
+        });
+
         Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard.admin');
         Route::resource('categories', CategoryController::class);
 

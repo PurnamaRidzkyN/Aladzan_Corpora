@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('title', 'Toko - ' . $shop->name)
+@section('meta_description', $shop->description ?? 'Temukan berbagai produk menarik di toko kami. Mulai dari elektronik, fashion, hingga kebutuhan sehari-hari. Belanja sekarang dan nikmati penawaran terbaik!')
 @section('content')
     <div class="max-w-7xl mx-auto px-4 py-8">
         <!-- Toko Header -->

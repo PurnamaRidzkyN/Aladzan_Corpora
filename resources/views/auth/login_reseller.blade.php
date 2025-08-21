@@ -5,6 +5,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login ALADZAN CORPORA</title>
+    <meta name="description"
+        content="Masuk untuk mulai berbelanja produk ALADZAN sebagai reseller atau daftar untuk membuka akun reseller Anda.">
+    <meta name="robots" content="noindex, follow">
     <link rel="icon" type="image/png" href="{{ asset('storage/logo1.png') }}">
     <link rel="shortcut icon" href="{{ asset('storage/logo1.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])

@@ -5,7 +5,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@yield('title', 'ALADZAN CORPORA')</title>
-    <link rel="icon" type="image/png" href="{{ asset('storage/logo1.png') }}">
+    <meta name="description" content="@yield('description', 'ALADZAN CORPORA: Platform reseller terpercaya.')">
+    @yield('head_extra')
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('storage/logo1.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('storage/logo1.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('storage/logo1.png') }}">
     <link rel="shortcut icon" href="{{ asset('storage/logo1.png') }}">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
@@ -34,18 +38,18 @@
 
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-            <!-- Logo -->
-            <a href="/" class="text-xl font-bold text-blue-600 hover:text-blue-700 transition">
+            {{-- Logo --}}
+            <a href="/" class="flex-shrink-0">
                 <img src="{{ asset('storage/logo2.png') }}" alt="ALADZAN CORPORA Logo"
-                    class="w-48 h-auto object-contain mb-2">
-
+                    class="w-24 sm:w-32 md:w-48 max-w-full h-auto object-contain">
             </a>
 
-            <!-- Search Form -->
-            <form action="/search" method="GET" class="flex-1 flex">
+            {{-- Search Form --}}
+            <form action="/search" method="GET" class="flex-1 min-w-0 flex">
                 <input type="text" name="q" placeholder="Cari produk..."
-                    class="w-full px-4 py-2 border border-gray-300 rounded-l-xl focus:ring-2 focus:ring-blue-300 outline-none" />
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-r-xl hover:bg-blue-700">
+                    class="flex-1 px-4 py-2 border border-gray-300 rounded-l-xl focus:ring-2 focus:ring-blue-300 outline-none w-full" />
+                <button type="submit"
+                    class="flex-none px-4 py-2 bg-blue-600 text-white rounded-r-xl hover:bg-blue-700">
                     <i class="fa-solid fa-magnifying-glass"></i>
                 </button>
             </form>
@@ -126,7 +130,7 @@
                     <div x-show="openUser" @click.away="openUser = false" x-cloak
                         class="absolute right-0 mt-2 w-44 bg-white shadow-lg rounded-lg p-3 z-10 text-sm">
                         @if ($adminLoggedIn)
-                            <a href="/admin/dashboard"
+                            <a href="{{ route('dashboard.admin') }}"
                                 class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Dashboard</a>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
@@ -136,7 +140,8 @@
                                 </button>
                             </form>
                         @elseif(auth()->check())
-                            <div class="px-3 py-2 text-gray-900 font-semibold truncate">{{ auth()->user()->name }}</div>
+                            <div class="px-3 py-2 text-gray-900 font-semibold truncate">{{ auth()->user()->name }}
+                            </div>
                             <a href="/profil" class="block px-3 py-2 text-gray-700 hover:bg-gray-100 rounded">Profil
                                 Saya</a>
                             <form method="POST" action="{{ route('logout') }}">
