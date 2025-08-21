@@ -43,6 +43,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'adzani ksw',
             'email' => 'adzanikusumantapraja.92@gmail.com',
             'password' => bcrypt('adzanikusumantapraja'),
+            'is_super_admin' => true,
             'email_verified_at' => now(),
         ]);
         Admin::create([
