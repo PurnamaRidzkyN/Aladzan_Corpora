@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Akun Admin Anda di Yaladzanhub</title>
+    <title>Akun Admin Anda di ALADZAN CORPORA</title>
 </head>
 <body style="margin: 0; padding: 40px 0; background-color: #f7fafc; font-family: Arial, sans-serif;">
     <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
@@ -11,7 +11,7 @@
         </h2>
 
         <p style="color: #4a5568; font-size: 16px; margin-bottom: 20px;">
-            Halo! Akun Anda telah <strong>dibuat sebagai admin</strong> di platform <strong>Yaladzanhub</strong> oleh tim kami.
+            Halo! Akun Anda telah <strong>dibuat sebagai admin</strong> di platform <strong>ALADZAN CORPORA</strong> oleh tim kami.
         </p>
 
         <div style="background-color: #f1f5f9; padding: 15px; border-radius: 8px; border: 1px solid #cbd5e0; margin-bottom: 20px;">
@@ -25,7 +25,7 @@
 
         <div style="text-align: center; margin-bottom: 30px;">
             <a href="{{ $loginUrl }}" style="display: inline-block; background-color: #3182ce; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold;">
-                Masuk ke Yaladzanhub
+                Masuk ke ALADZAN CORPORA
             </a>
         </div>
 

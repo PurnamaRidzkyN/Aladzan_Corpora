@@ -12,7 +12,7 @@
         </h2>
 
         <p style="font-size: 16px; color: #374151; margin-bottom: 16px;">
-            Halo <strong>{{ $name }}</strong>, kami menerima permintaan untuk mengganti alamat email akun <strong>Yaladzanhub</strong> Dengan nama <strong>{{ $name }}</strong> ke alamat email baru ini.
+            Halo <strong>{{ $name }}</strong>, kami menerima permintaan untuk mengganti alamat email akun <strong>ALADZAN CORPORA</strong> Dengan nama <strong>{{ $name }}</strong> ke alamat email baru ini.
         </p>
 
         <p style="font-size: 15px; color: #4b5563; margin-bottom: 16px;">
@@ -40,7 +40,7 @@
 
         <p style="font-size: 14px; color: #9ca3af;">
             Salam hangat,<br>
-            Tim Yaladzanhub
+            Tim ALADZAN CORPORA
         </p>
     </div>
 </body>

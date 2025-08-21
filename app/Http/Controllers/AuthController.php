@@ -115,7 +115,7 @@ class AuthController extends Controller
                 'resetUrl' => $resetUrl,
             ],
             function ($message) use ($request) {
-                $message->to($request->email)->subject('Reset Password Yaladzanhub');
+                $message->to($request->email)->subject('Reset Password ALADZAN CORPORA');
             },
         );
 

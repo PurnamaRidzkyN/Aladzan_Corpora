@@ -145,6 +145,7 @@
                     <form method="POST" action="{{ route('upgrade.account.payment.store') }}"
                         enctype="multipart/form-data">
                         @csrf
+                        @method('post')
 
                         <!-- Metode pembayaran yang dipilih -->
                         <input type="hidden" name="selected_method" :value="selected?.type">

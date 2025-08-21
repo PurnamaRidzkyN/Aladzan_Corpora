@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Reset Password - Yaladzanhub</title>
+    <title>Reset Password - ALADZAN CORPORA</title>
 </head>
 <body style="margin: 0; padding: 40px 0; background-color: #f7fafc; font-family: Arial, sans-serif;">
     <div style="max-width: 600px; margin: auto; background: #ffffff; padding: 30px; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
@@ -25,7 +25,7 @@
         </p>
 
         <p style="text-align: center; font-size: 14px; color: #a0aec0; margin-top: 40px;">
-            &copy; {{ date('Y') }} Yaladzanhub. Semua hak dilindungi.
+            &copy; {{ date('Y') }} ALADZAN CORPORA. Semua hak dilindungi.
         </p>
     </div>
 </body>

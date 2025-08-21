@@ -184,8 +184,13 @@ class ResellerController extends Controller
 
     public function storeUpgradePaymentProof(Request $request)
     {
+        if (!in_array($request->selected_method, ['va', 'ewallet', 'qris'])) {
+            return redirect()
+                ->route('profile')
+                ->withErrors(['selected_method' => 'Pilih metode pembayaran yang valid'])
+                ->withInput();
+        }
         $validated = $request->validate([
-            'selected_method' => 'required|string|in:va,ewallet,qris',
             'bukti_pembayaran' => 'required|image|mimes:jpeg,png,jpg|max:2048',
             'plan_id' => 'required|integer',
             'final_price' => 'required|numeric',

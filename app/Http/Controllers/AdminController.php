@@ -48,7 +48,7 @@ class AdminController extends Controller
         'loginUrl' => route('login.admin'),
     ], function ($message) use ($data) {
         $message->to($data['email'])
-                ->subject('Akun Admin Anda di Yaladzanhub');
+                ->subject('Akun Admin Anda di ALADZAN CORPORA');
     });
 
     return redirect()->route('admins.index')->with('success', 'Admin berhasil dibuat dan email sudah dikirim.');

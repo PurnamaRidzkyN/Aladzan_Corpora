@@ -12,7 +12,7 @@
         </h2>
 
         <p style="font-size: 16px; color: #374151; margin-bottom: 16px;">
-            Halo <strong>{{ $name }}</strong>, terima kasih telah mendaftar di <strong>Yaladzanhub</strong>.
+            Halo <strong>{{ $name }}</strong>, terima kasih telah mendaftar di <strong>ALADZAN CORPORA</strong>.
         </p>
 
         <p style="font-size: 15px; color: #4b5563; margin-bottom: 24px;">
@@ -31,7 +31,7 @@
 
         <p style="font-size: 14px; color: #9ca3af;">
             Salam hangat,<br>
-            Tim Yaladzanhub
+            Tim ALADZAN CORPORA
         </p>
     </div>
 </body>
