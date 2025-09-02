@@ -92,7 +92,11 @@ class PaymentController extends Controller
             // Hitung subtotal dan total berat dari toko ini
             foreach ($itemsPerShop as $item) {
                 $subtotal += $item->variant->price * $item->quantity;
-                $totalWeight += $item->variant->product->weight * $item->quantity;
+                $itemWeight = $item->variant->product->weight;
+                if ($itemWeight == 0) {
+                    continue;
+                }
+                $totalWeight += $itemWeight * $item->quantity;
             }
 
             $shopSubtotals[$shopName] = $subtotal;
