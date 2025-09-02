@@ -31,13 +31,13 @@ class ContactSettingController extends Controller
 
         // Validasi sederhana
         $data = $request->validate([
-            'whatsapp' => 'required|string',
+            'whatsapp' => 'nullable|string',
             'bank_accounts' => 'nullable|array',
-            'bank_accounts.*.name' => 'required|string',
-            'bank_accounts.*.number' => 'required|string',
+            'bank_accounts.*.name' => 'nullable|string',
+            'bank_accounts.*.number' => 'nullable|string',
             'ewallets' => 'nullable|array',
-            'ewallets.*.provider' => 'required|string',
-            'ewallets.*.number' => 'required|string',
+            'ewallets.*.provider' => 'nullable|string',
+            'ewallets.*.number' => 'nullable|string',
         ]);
 
         // Simpan ke table settings, kita pakai key unik

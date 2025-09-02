@@ -190,4 +190,16 @@
             </div>
         </div>
     @endif
+    <script>
+    function cloudinaryUrl(path) {
+        // Laravel yang generate URL dasar
+        const base = "{{ rtrim(cloudinary_url('dummy'), 'dummy') }}";
+        
+        if (!path) {
+            return "{{ asset('images/no-image.png') }}"; // fallback kalau kosong
+        }
+        return base + path;
+    }
+</script>
+
 @endsection
