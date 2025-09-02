@@ -72,7 +72,11 @@
 
                         <div class="flex justify-between text-sm text-gray-600">
                             <span>Ongkir</span>
-                            <span>Rp{{ number_format($ongkirPerShop[$shopName] ?? 0, 0, ',', '.') }}</span>
+                            <span>
+                                {{ ($ongkirPerShop[$shopName] ?? 0) > 0
+                                    ? 'Rp' . number_format($ongkirPerShop[$shopName], 0, ',', '.')
+                                    : 'Gratis' }}
+                            </span>
                         </div>
                     </div>
                 @endforeach
@@ -106,11 +110,11 @@
             <input type="hidden" name="total_shipping" value="{{ $totalOngkir }}">
             <input type="hidden" name="address_id" value="{{ $address?->id }}">
 
-         <div class="mt-6">
-    <button type="submit" class="btn btn-primary w-full py-3 text-lg rounded-xl shadow-lg">
-         <i class="fas fa-wallet mr-2"></i> Bayar Sekarang
-    </button>
-</div>
+            <div class="mt-6">
+                <button type="submit" class="btn btn-primary w-full py-3 text-lg rounded-xl shadow-lg">
+                    <i class="fas fa-wallet mr-2"></i> Bayar Sekarang
+                </button>
+            </div>
 
         </form>
     </div>

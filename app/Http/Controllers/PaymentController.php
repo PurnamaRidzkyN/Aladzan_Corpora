@@ -99,8 +99,11 @@ class PaymentController extends Controller
                 $totalWeight += $itemWeight * $item->quantity;
             }
             if ($itemWeight == 0) {
-                    continue;
-                }
+                $shopSubtotals[$shopName] = $subtotal;
+                $ongkirPerShop[$shopName] = 0;
+                $totalOngkir = 0;
+                continue;
+            }
             $shopSubtotals[$shopName] = $subtotal;
 
             $shop = $itemsPerShop->first()->variant->product->shop;
