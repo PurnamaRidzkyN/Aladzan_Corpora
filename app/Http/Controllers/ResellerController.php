@@ -190,13 +190,25 @@ class ResellerController extends Controller
                 ->withErrors(['selected_method' => 'Pilih metode pembayaran yang valid'])
                 ->withInput();
         }
-        $validated = $request->validate([
-            'bukti_pembayaran' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-            'plan_id' => 'required|integer',
-            'final_price' => 'required|numeric',
-            'discount_code' => 'nullable|string',
-            'discount_amount' => 'nullable|numeric',
-        ]);
+        $validated = $request->validate(
+            [
+                'bukti_pembayaran' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+                'plan_id' => 'required|integer',
+                'final_price' => 'required|numeric',
+                'selected_method' => 'required|string',
+                'discount_code' => 'nullable|string',
+                'discount_amount' => 'nullable|numeric',
+            ],
+            [
+                'bukti_pembayaran.required' => 'Bukti pembayaran wajib diunggah.',
+                'bukti_pembayaran.image' => 'File bukti pembayaran harus berupa gambar.',
+                'bukti_pembayaran.mimes' => 'Format bukti pembayaran harus jpeg, png, atau jpg.',
+                'bukti_pembayaran.max' => 'Ukuran bukti pembayaran maksimal 2 MB.',
+
+                'selected_method.required' => 'Silakan pilih metode pembayaran.',
+                'selected_method.string' => 'Metode pembayaran tidak valid.',
+            ],
+        );
 
         $publicId = 'OS/O-' . auth()->id() . '/' . time();
 
@@ -212,7 +224,7 @@ class ResellerController extends Controller
             'price' => $validated['final_price'],
             'discount_code' => $validated['discount_code'] ?? null,
             'discount_amount' => $validated['discount_amount'] ?? 0,
-            'payment_method' => $validated['selected_method'],
+            'payment_method' => $request['selected_method'],
             'payment_proof' => $payment['public_id'],
             'paid_at' => now(),
         ]);
