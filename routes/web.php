@@ -145,6 +145,7 @@ Route::middleware([AdminMiddleware::class])->group(function () {
         Route::delete('shops/{product}/force', [ProductController::class, 'forceDelete'])->name('products.forceDelete');
 
         Route::get('/orders', [OrderController::class, 'currentOrders'])->name('orders.current');
+        Route::get('/resi/download/{resi}',  [OrderController::class, 'downloadResi'])->name('orders.downloadResi');
         Route::post('/orders/update-status', [OrderController::class, 'changeStatus'])->name('order.update-status');
         Route::get('/orders/history', [OrderController::class, 'history_orders'])->name('orders.history');
 

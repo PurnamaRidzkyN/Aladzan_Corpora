@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
-    protected $fillable = ['order_code', 'reseller_id', 'total_price', 'status', 'shipping_address', 'note', 'total_shipping', 'is_paid_at', 'is_processed_at', 'is_shipped_at', 'is_done_at', 'is_cancelled_at', 'payment_proofs', 'payment_method'];
+    protected $fillable = ['order_code', 'reseller_id', 'total_price', 'status', 'shipping_address', 'note', 'total_shipping', 'is_paid_at', 'is_processed_at', 'is_shipped_at', 'is_done_at', 'is_cancelled_at', 'payment_proofs', 'payment_method', 'resi_id'];
 
     protected $appends = ['status_name','status_color'];
     public function getStatusNameAttribute()
@@ -43,5 +43,9 @@ class Order extends Model
     public function rating()
     {
         return $this->hasMany(Rating::class);
+    }
+    public function resi()
+    {
+        return $this->belongsTo(Resi::class);
     }
 }

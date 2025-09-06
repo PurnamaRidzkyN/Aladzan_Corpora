@@ -4,6 +4,7 @@
 @section('content')
     <div class=" mx-auto px-4 md:px-6 py-6 pb-32"x-data="{ deleteId: null }">
         <h1 class="text-2xl font-bold text-primary mb-6">Keranjang Belanja</h1>
+{{ $errors->first('resi_file') }}
 
         <form id="cartForm" method="POST" action="{{ route('checkout.chooseAddress') }}">
             @csrf

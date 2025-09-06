@@ -29,7 +29,7 @@
             orders: @js($orders),
             order: null,
             showModal: false
-             }" x-effect="order = orders.find(o => o.id === selectedOrderId) || null"
+        }" x-effect="order = orders.find(o => o.id === selectedOrderId) || null"
             class="grid grid-cols-1 md:grid-cols-3 gap-6">
             <!-- KIRI: DAFTAR ORDER -->
             <div class="md:col-span-1">
@@ -81,7 +81,38 @@
                                     <span
                                         x-text="order.note && order.note.trim() !== '' ? order.note : 'Tidak ada note'"></span>
                                 </p>
+                                <!-- Divider -->
+                                <hr class="border-gray-300">
+
+                                <!-- Resi -->
+                                <div>
+                                    <h3 class="font-semibold text-gray-700 mb-2">Resi</h3>
+                                    <template x-if="order.resi">
+                                        <div class="space-y-2">
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-medium text-gray-600">Nomor Resi:</span>
+                                                <span x-text="order.resi.resi_number"
+                                                    class="text-gray-800 font-semibold"></span>
+                                                    
+                                            </div>
+                                            <div class="flex items-center justify-between">
+                                                <span class="font-medium text-gray-600">Asal Resi:</span>
+                                                <span x-text="order.resi.resi_source.name" class="text-gray-800"></span>
+                                            </div>
+                                            <div class="mt-2">
+                                                <a :href="'/staff-only/resi/download/' + order.resi.id"
+                                                    class="btn-gradient-primary w-full ">
+                                                    Download / Preview
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </template>
+                                    <template x-if="!order.resi">
+                                        <div class="text-gray-500 italic">Resi Otomatis</div>
+                                    </template>
+                                </div>
                             </div>
+
 
                             <div class="border-t pt-4">
                                 <h3 class="text-md font-semibold mb-2">Daftar Produk</h3>
@@ -155,7 +186,8 @@
 
 
                             <div class="pt-4 text-right">
-                                <button class="btn btn-sm btn-gradient-primary" @click="showModal = true">Ubah Status</button>
+                                <button class="btn btn-sm btn-gradient-primary" @click="showModal = true">Ubah
+                                    Status</button>
                             </div>
                         </div>
                     </div>
@@ -191,15 +223,15 @@
         </div>
     @endif
     <script>
-    function cloudinaryUrl(path) {
-        // Laravel yang generate URL dasar
-        const base = "{{ rtrim(cloudinary_url('dummy'), 'dummy') }}";
-        
-        if (!path) {
-            return "{{ asset('images/no-image.png') }}"; // fallback kalau kosong
+        function cloudinaryUrl(path) {
+            // Laravel yang generate URL dasar
+            const base = "{{ rtrim(cloudinary_url('dummy'), 'dummy') }}";
+
+            if (!path) {
+                return "{{ asset('images/no-image.png') }}"; // fallback kalau kosong
+            }
+            return base + path;
         }
-        return base + path;
-    }
-</script>
+    </script>
 
 @endsection

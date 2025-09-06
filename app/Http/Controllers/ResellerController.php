@@ -312,13 +312,13 @@ class ResellerController extends Controller
             'paid_at' => now(),
         ]);
 
-        // Opsional: upgrade reseller plan
+        //  upgrade reseller plan
         if ($order->reseller) {
             $order->reseller->update([
                 'plan_id' => $order->plan_id,
             ]);
         }
-        NotificationHelper::notifyReseller($order->reseller->id, 'Upgrade Disetujui', 'Upgrade akunmu telah disetujui oleh admin. Sekarang akunmu berada di plan ' . $order->plan->name, route('upgrade.account'));
+        NotificationHelper::notifyReseller($order->reseller, 'Upgrade Disetujui', 'Upgrade akunmu telah disetujui oleh admin. Sekarang akunmu berada di plan ' . $order->plan->name, route('upgrade.account'));
         AdminActivityHelper::log('APPROVE', 'order_subscriptions', $order->id, 'Menyetujui upgrade akun: ' . $order->order_code);
 
         return redirect()->route('admin.orders.pending')->with('success', 'Pembelian disetujui.');

@@ -188,7 +188,7 @@ class AuthController extends Controller
         try {
             $googleUser = Socialite::driver('google')->stateless()->user();
         } catch (\Exception $e) {
-            return redirect('/login')->withErrors('Gagal login dengan Google.');
+            return redirect('/login')->withErrors(['email' => 'Gagal login dengan Google.']);
         }
         $user = Reseller::where('email', $googleUser->getEmail())->first();
 

@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\Resi;
 use App\Models\Order;
 use App\Models\Address;
 use App\Models\Setting;
 use App\Models\OrderItem;
+use App\Models\ResiSource;
 use Illuminate\Support\Str;
 use App\Models\ShippingCost;
 use Illuminate\Http\Request;
@@ -14,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use App\Helpers\NotificationHelper;
 use Illuminate\Support\Facades\Http;
 use CloudinaryLabs\CloudinaryLaravel\Facades\Cloudinary;
+use Illuminate\Support\Facades\Log;
 
 class PaymentController extends Controller
 {
@@ -100,6 +103,7 @@ class PaymentController extends Controller
             }
             if ($itemWeight == 0) {
                 $shopSubtotals[$shopName] = $subtotal;
+
                 $ongkirPerShop[$shopName] = 0;
                 $totalOngkir = 0;
                 continue;
@@ -114,21 +118,39 @@ class PaymentController extends Controller
             $ongkirPerShop[$shopName] = $ongkir;
             $totalOngkir += $ongkir;
         }
+        $resiSources = ResiSource::all();
 
         $subtotalAll = array_sum($shopSubtotals);
         $total = $subtotalAll + $totalOngkir;
-        return view('store.profile.checkout', compact('cartItems', 'shopSubtotals', 'totalOngkir', 'subtotalAll', 'total', 'ongkirPerShop', 'address'));
+        return view('store.profile.checkout', compact('resiSources', 'cartItems', 'shopSubtotals', 'totalOngkir', 'subtotalAll', 'total', 'ongkirPerShop', 'address'));
     }
     public function checkoutConfirm(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'cart_ids' => 'required|array',
-                'total_price' => 'required|numeric',
-                'total_shipping' => 'required|numeric',
-                'address_id' => 'required|exists:addresses,id',
-                'note' => 'nullable|string',
-            ]);
+            $validated = $request->validate(
+                [
+                    'cart_ids' => 'required|array',
+                    'total_price' => 'required|numeric',
+                    'total_shipping' => 'required|numeric',
+                    'address_id' => 'required|exists:addresses,id',
+                    'note' => 'nullable|string',
+                    'has_resi' => 'required|string',
+                    'resi_number' => 'required_if:has_resi,1|string|max:255',
+                    'resi_file' => 'required_if:has_resi,1|file|mimes:pdf,doc,docx,txt,jpg,jpeg,png,|max:1048',
+                    'resi_source_id' => 'required_if:has_resi,1|exists:resi_sources,id',
+                ],
+                [
+                    'cart_ids.required' => 'Silakan pilih minimal 1 item.',
+                    'cart_ids.array' => 'Data tidak valid. Silakan coba lagi.',
+                    'address_id.required' => 'Alamat tidak ditemukan.',
+                    'resi_number.required_if' => 'Nomor resi wajib diisi jika mengunggah resi.',
+                    'resi_file.required_if' => 'File resi wajib diunggah jika mengunggah resi.',
+                    'resi_file.mimes' => 'File resi harus berupa file dengan format: pdf, doc, docx, txt, jpg, jpeg, png.',
+                    'resi_file.max' => 'Ukuran file resi maksimal 1MB.',
+                    'resi_source_id.required_if' => 'Sumber resi wajib dipilih jika mengunggah resi.',
+                    'resi_source_id.exists' => 'Sumber resi tidak valid.',
+                ],
+            );
 
             $address = Address::where('reseller_id', auth()->id())
                 ->where('id', $request->address_id)
@@ -146,14 +168,33 @@ class PaymentController extends Controller
             $shipping_address_parts = [$address->recipient_name, 'Telp: ' . $address->phone_number, $address->address_detail, $address->village ? 'Kampung ' . $address->village : null, $address->neighborhood && $address->hamlet ? 'RT ' . $address->neighborhood . ' / RW ' . $address->hamlet : null, $address->sub_district ? 'Desa/Kel. ' . $address->sub_district : null, $address->district ? 'Kec. ' . $address->district : null, $address->city, $address->province . ' ' . $address->postal_code];
 
             $shipping_address = implode("\n", array_filter($shipping_address_parts));
+            $resi = null;
+            if ($validated['has_resi'] == '1') {
+                $filePath = $request->file('resi_file')->getRealPath();
+
+                $uploadResult = Cloudinary::uploadApi()->upload($filePath, [
+                    'folder' => 'resi_files',
+                    'resource_type' => 'raw',
+                ]);
+
+                $fileUrl = $uploadResult['secure_url'];
+
+                $resi = Resi::create([
+                    'resi_number' => $validated['resi_number'],
+                    'file_path' => $fileUrl,
+                    'file_name' => $validated['resi_number'] . '.' . $request->file('resi_file')->getClientOriginalExtension(),
+                    'resi_source_id' => $validated['resi_source_id'],
+                ]);
+            }
 
             $order = Order::create([
                 'order_code' => 'ORD-' . strtoupper(Str::random(8)),
                 'reseller_id' => auth()->id(),
+                'resi_id' => $resi->id,
                 'total_price' => $validated['total_price'],
                 'shipping_address' => $shipping_address,
                 'total_shipping' => $validated['total_shipping'],
-                'note' => $validated['note'],
+                'note' => $validated['note'] ?? null,
             ]);
 
             $carts = Cart::with('variant.product')
@@ -186,6 +227,12 @@ class PaymentController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             return redirect()->route('cart')->withErrors($e->validator)->withInput();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()
+                ->route('cart')
+                ->withErrors(['resi_file' => 'Gagal mengunggah file resi silahkan coba lagi.'])
+                ->withInput();
         }
     }
     public function payment($order_code)

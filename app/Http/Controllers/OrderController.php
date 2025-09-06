@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Resi;
 use App\Models\Order;
 use App\Models\Rating;
 use Illuminate\Http\Request;
-use App\Helpers\AdminActivityHelper;
 use App\Helpers\NotificationHelper;
+use App\Helpers\AdminActivityHelper;
+use Illuminate\Support\Facades\Http;
 
 class OrderController extends Controller
 {
@@ -15,10 +17,18 @@ class OrderController extends Controller
      */
     public function currentOrders()
     {
-        $orders = Order::with('orderItems', 'reseller')
+        $orders = Order::with('orderItems', 'reseller', 'resi','resi.resiSource')
             ->whereNotIn('status', [3, 4])
             ->get();
         return view('admin.order.current_orders', compact('orders'));
+    }
+    public function downloadResi(Resi $resi)
+    {
+        $response = Http::get($resi->file_path); // ambil file dari Cloudinary
+
+        return response($response->body(), 200)
+            ->header('Content-Type', $response->header('Content-Type'))
+            ->header('Content-Disposition', 'attachment; filename="' . $resi->file_name . '"');
     }
 
     public function changeStatus(Request $request)
@@ -52,13 +62,13 @@ class OrderController extends Controller
     }
     public function history_orders()
     {
-        $orders = Order::with('orderItems','reseller')->get();
+        $orders = Order::with('orderItems', 'reseller', 'resi')->get();
         return view('admin.order.history_orders', compact('orders'));
     }
     public function orderHistory()
     {
         $orders = Order::where('reseller_id', auth()->id())
-            ->with('orderItems.variant.product', 'rating')
+            ->with('orderItems.variant.product', 'rating', 'resi')
             ->get();
         return view('store.profile.order_history', compact('orders'));
     }

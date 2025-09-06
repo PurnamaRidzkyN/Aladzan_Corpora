@@ -28,7 +28,7 @@
         </div>
 
         {{-- Form Checkout --}}
-        <form class="space-y-3" action="{{ route('checkout.confirm') }}" method="POST">
+        <form class="space-y-3" action="{{ route('checkout.confirm') }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('POST')
 
@@ -82,12 +82,59 @@
                 @endforeach
             </div>
 
-            {{-- Catatan Pembeli --}}
-            <div class="bg-white p-4 rounded-2xl shadow space-y-2">
-                <label for="note" class="block font-medium text-sm text-gray-700">Catatan untuk Penjual</label>
-                <textarea id="note" name="note" rows="3" class="textarea textarea-bordered w-full"
-                    placeholder="Contoh: Tolong bungkus dengan rapi ya..."></textarea>
+            {{-- Pilihan Resi --}}
+            <div class="bg-white p-4 rounded-2xl shadow space-y-4">
+                <h2 class="font-semibold text-gray-800">Pengaturan Resi</h2>
+
+                {{-- Pilihan Radio --}}
+                <div class="flex items-center space-x-4">
+                    <label class="flex items-center space-x-2">
+                        <input type="radio" name="has_resi" value="0" class="radio" checked>
+                        <span>Resi Otomatis</span>
+                    </label>
+                    <label class="flex items-center space-x-2">
+                        <input type="radio" name="has_resi" value="1" class="radio">
+                        <span>Resi Manual</span>
+                    </label>
+                </div>
+
+                {{-- Form Manual Resi --}}
+                <div id="manual-resi-form" class="hidden space-y-3">
+                    <div>
+                        <label for="resi_number" class="block text-sm font-medium text-gray-700">Nomor Resi</label>
+                        <input type="text" id="resi_number" name="resi_number" class="input input-bordered w-full"
+                            placeholder="Masukkan nomor resi">
+                    </div>
+
+                    <div>
+                        <label for="resi_file" class="block text-sm font-medium text-gray-700">Upload File Resi</label>
+                        <input type="file" id="resi_file" name="resi_file" class="file-input file-input-bordered w-full">
+                    </div>
+
+                    <div>
+                        <label for="resi_source_id" class="block text-sm font-medium text-gray-700">Asal Resi</label>
+                        <select id="resi_source_id" name="resi_source_id" class="select select-bordered w-full">
+                            <option value="">-- Pilih asal resi --</option>
+                            @foreach ($resiSources as $source)
+                                <option value="{{ $source->id }}">{{ $source->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
             </div>
+
+            <script>
+                document.querySelectorAll('input[name="has_resi"]').forEach(radio => {
+                    radio.addEventListener('change', function() {
+                        const manualForm = document.getElementById('manual-resi-form');
+                        if (this.value === '1') {
+                            manualForm.classList.remove('hidden');
+                        } else {
+                            manualForm.classList.add('hidden');
+                        }
+                    });
+                });
+            </script>
 
 
             {{-- Ringkasan Biaya --}}
