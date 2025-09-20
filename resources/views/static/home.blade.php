@@ -27,9 +27,7 @@
     <link rel="icon" type="image/png" href="{{ asset('storage/logo2.png') }}">
 
     <!-- Tailwind & Font Awesome -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         .scrollbar-hide::-webkit-scrollbar {
             display: none;
