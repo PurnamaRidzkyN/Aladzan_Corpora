@@ -114,55 +114,7 @@
             @yield('content')
 
         </main>
-        <footer class="bg-base-200 text-base-content mt-10">
-            <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
-                <!-- Brand -->
-                <div>
-                    <h2 class="text-lg font-bold text-primary mb-2">ResellerHub</h2>
-                    <p class="text-sm text-gray-500">
-                        Platform terpercaya untuk reseller mencari produk terbaik dengan harga grosir. Mudah, cepat, dan
-                        aman.
-                    </p>
-                </div>
-
-                <!-- Bantuan -->
-                <div>
-                    <h4 class="footer-title">Bantuan</h4>
-                    <ul class="space-y-1 text-sm">
-                        <li><a href="/faq" class="link link-hover">FAQ</a></li>
-                        <li><a href="/cara-belanja" class="link link-hover">Cara Belanja</a></li>
-                        <li><a href="/kontak" class="link link-hover">Kontak Kami</a></li>
-                    </ul>
-                </div>
-
-                <!-- Untuk Reseller -->
-                <div>
-                    <h4 class="footer-title">Untuk Reseller</h4>
-                    <ul class="space-y-1 text-sm">
-                        <li><a href="/register" class="link link-hover">Daftar Reseller</a></li>
-                        <li><a href="/login" class="link link-hover">Masuk</a></li>
-                        <li><a href="/syarat" class="link link-hover">Syarat & Ketentuan</a></li>
-                    </ul>
-                </div>
-
-                <!-- Kontak -->
-                <div>
-                    <h4 class="footer-title">Customer Service</h4>
-                    <p class="text-sm">Email: <a href="mailto:y.aladzan.92@gmail.com"
-                            class="link link-hover text-blue-600">y.aladzan.92@gmail.com
-                        </a></p>
-                    <div class="mt-3 flex space-x-3 text-xl">
-                        <a href="#"><i class="fab fa-facebook-f hover:text-blue-600"></i></a>
-                        <a href="#"><i class="fab fa-instagram hover:text-pink-500"></i></a>
-                        <a href="#"><i class="fab fa-whatsapp hover:text-green-500"></i></a>
-                    </div>
-                </div>
-            </div>
-
-            <div class="border-t border-gray-300 text-center py-4 text-sm text-gray-500">
-                &copy; {{ date('Y') }} Y-Aladzan. All rights reserved.
-            </div>
-        </footer>
+        @include('layouts.footer')
     </div>
 
 </body>

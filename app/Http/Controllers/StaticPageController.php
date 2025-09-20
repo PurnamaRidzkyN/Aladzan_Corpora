@@ -9,9 +9,6 @@ class StaticPageController extends Controller
     public function snk(){
         return view('static.snk');
     }
-    public function kontak(){
-        return view('static.kontak');
-    }
     public function faq(){
         return view('static.faq');
     }

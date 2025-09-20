@@ -51,7 +51,6 @@ Route::get('/', function () {
 })->name('home.static');
 
 Route::get('/snk', [StaticPageController::class, 'snk'])->name('snk');
-Route::get('/kontak', [StaticPageController::class, 'kontak'])->name('kontak');
 Route::get('/faq', [StaticPageController::class, 'faq'])->name('faq');
 Route::get('/kebijakan-privasi', [StaticPageController::class, 'kebijakanPrivasi'])->name('kebijakan-privasi');
 Route::get('/disclaimer', [StaticPageController::class, 'disclaimer'])->name('disclaimer');

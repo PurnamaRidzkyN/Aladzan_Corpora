@@ -11,7 +11,7 @@ class ProPlanMiddleware
     public function handle(Request $request, Closure $next)
     {
         $reseller = Auth::guard('reseller')->user();
-        if (!$reseller || $reseller->plan->name !== 'Pro') {
+        if (!$reseller || $reseller->plan->name !== 'Basic') {
             return redirect()->route('upgrade.account')
                 ->with('error', 'Akses hanya untuk reseller plan PRO.');
         }

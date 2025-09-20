@@ -220,7 +220,7 @@
             @if (Auth::guard('admin')->check())
                 <a href="{{ route('dashboard.admin') }}"
                     class="relative flex flex-col items-center justify-center
-                {{ request()->is(route('dashboard.admin')) ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
+                {{ request()->is( route('dashboard.admin') ) ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
                     <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -251,6 +251,8 @@
 
         </div>
     </div>
+
+
 
     {{-- Konten halaman --}}
     <div class=" p-10">

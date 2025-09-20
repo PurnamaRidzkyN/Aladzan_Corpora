@@ -24,6 +24,7 @@ class CreateUsersAndAuthTokensTable extends Migration
             $table->integer('price');
             $table->string('currency', 10)->default('IDR');
             $table->integer('duration_days')->default(0);
+            $table->boolean('is_available')->default(true);
             $table->timestamps();
         });
         Schema::create('resellers', function (Blueprint $table) {

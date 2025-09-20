@@ -188,6 +188,7 @@ class AuthController extends Controller
         if ($user) {
             Auth::login($user);
             $redirectTo = session()->pull('reseller_redirect_back', '/home');
+            
             if ($redirectTo == url('/')) {
                 return redirect("/home");
             }
