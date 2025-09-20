@@ -21,7 +21,6 @@ class AuthController extends Controller
     {
         return view('auth.login_admin');
     }
-
     public function loginAdmin(Request $request)
     {
         $request->validate([
@@ -42,12 +41,10 @@ class AuthController extends Controller
             'email' => 'Email atau password salah.',
         ]);
     }
-
     public function showLoginResellerForm()
     {
         return view('auth.login_reseller');
     }
-
     public function loginReseller(Request $request)
     {
         $request->validate([
@@ -61,19 +58,17 @@ class AuthController extends Controller
 
         if ($reseller && Hash::check($request->password, $reseller->password)) {
             Auth::guard('reseller')->login($reseller, $remember);
-            return redirect()->intended('/');
+            return redirect()->intended('/home');
         }
 
         return back()->withErrors([
             'email' => 'Email atau password salah.',
         ]);
     }
-
     public function showForgotForm($ir)
     {
         return view('auth.forgot_password', compact('ir'));
     }
-
     public function sendResetLink(Request $request)
     {
         $request->validate([
@@ -128,7 +123,6 @@ class AuthController extends Controller
             'email' => $request->email,
         ]);
     }
-
     public function resetPassword(Request $request)
     {
         DB::table('password_reset_tokens')
@@ -174,7 +168,6 @@ class AuthController extends Controller
             return redirect()->route('login.admin')->with('success', 'Password berhasil diubah.');
         }
     }
-
     public function redirectToGoogle(Request $request)
     {
         if ($request->has('redirect')) {
@@ -194,7 +187,10 @@ class AuthController extends Controller
 
         if ($user) {
             Auth::login($user);
-            $redirectTo = session()->pull('reseller_redirect_back', '/');
+            $redirectTo = session()->pull('reseller_redirect_back', '/home');
+            if ($redirectTo == url('/')) {
+                return redirect("/home");
+            }
             return redirect($redirectTo);
         } else {
             $user = [
@@ -245,11 +241,20 @@ class AuthController extends Controller
             }
 
             // Validasi form dari request (misal)
-            $validated = $request->validate([
-                'name' => 'required|string|max:255',
-                'email' => 'required|email|unique:resellers,email',
-                'phone' => 'required|string|max:20',
-            ]);
+            $validated = $request->validate(
+                [
+                    'name' => 'required|string|max:255',
+                    'email' => 'required|email|unique:resellers,email',
+                    'phone' => 'required|string|max:20',
+                ],
+                [
+                    'name.required' => 'Nama wajib diisi.',
+                    'email.required' => 'Email wajib diisi.',
+                    'email.email' => 'Format email tidak valid.',
+                    'email.unique' => 'Email sudah terdaftar.',
+                    'phone.required' => 'Nomor telepon wajib diisi.',
+                ],
+            );
 
             // Simpan data reseller ke database
             $reseller = Reseller::create([
@@ -259,6 +264,7 @@ class AuthController extends Controller
                 'google_id' => $googleId,
                 'pfp_path' => $pfp,
                 'password' => bcrypt($googleId),
+                'plan_id' => null,
             ]);
 
             Auth::login($reseller);
@@ -266,17 +272,40 @@ class AuthController extends Controller
 
             return redirect()->route('upgrade.account')->with('success', 'Pendaftaran berhasil. Selamat datang!');
         } else {
-            $validated = $request->validate([
-                'name' => 'required|string|max:100',
-                'email' => 'required|email|unique:resellers,email',
-                'password' => 'required|string|min:8|confirmed',
-                'phone' => 'required|string|max:15|unique:resellers,phone',
-            ]);
+            $validated = $request->validate(
+                [
+                    'name' => 'required|string|max:255',
+                    'email' => 'required|email|unique:resellers,email',
+                    'password' => 'required|string|min:8|confirmed',
+                    'phone' => 'required|string|max:15|unique:resellers,phone',
+                ],
+                [
+                    'name.required' => 'Nama wajib diisi.',
+                    'name.string' => 'Nama harus berupa teks.',
+                    'name.max' => 'Nama maksimal 100 karakter.',
+
+                    'email.required' => 'Email wajib diisi.',
+                    'email.email' => 'Format email tidak valid.',
+                    'email.unique' => 'Email sudah terdaftar.',
+
+                    'password.required' => 'Kata sandi wajib diisi.',
+                    'password.string' => 'Kata sandi harus berupa teks.',
+                    'password.min' => 'Kata sandi minimal 8 karakter.',
+                    'password.confirmed' => 'Konfirmasi kata sandi tidak sesuai.',
+
+                    'phone.required' => 'Nomor telepon wajib diisi.',
+                    'phone.string' => 'Nomor telepon harus berupa teks.',
+                    'phone.max' => 'Nomor telepon maksimal 15 karakter.',
+                    'phone.unique' => 'Nomor telepon sudah terdaftar.',
+                ],
+            );
+
             $temp = [
                 'name' => $validated['name'],
                 'email' => $validated['email'],
                 'password' => Hash::make($validated['password']),
                 'phone' => $validated['phone'],
+                'plan_id' => null,
             ];
 
             Cache::put('register_' . $validated['email'], $temp, now()->addMinutes(5));
@@ -293,7 +322,7 @@ class AuthController extends Controller
                 },
             );
 
-            return redirect('/')->with('success', 'Link verifikasi telah dikirim ke email Anda. Silakan cek email Anda dan konfirmasi melalui tautan yang telah dikirim.');
+            return redirect('/home')->with('success', 'Link verifikasi telah dikirim ke email Anda. Silakan cek email Anda dan konfirmasi melalui tautan yang telah dikirim.');
         }
     }
 

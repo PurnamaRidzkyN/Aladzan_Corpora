@@ -43,14 +43,12 @@ use App\Models\Shop;
 
 /*
 |--------------------------------------------------------------------------
-| PUBLIC ROUTES
+| HOME
 |--------------------------------------------------------------------------
 */
-Route::get('/', [CatalogController::class, 'ShowHome'])->name('home');
-Route::get('/product/{slug}', [CatalogController::class, 'showProduct'])->name('product.show');
-Route::get('/search', [CatalogController::class, 'search'])->name('search');
-Route::get('/kategori/{slug}', [CatalogController::class, 'kategori'])->name('category.show');
-Route::get('/shop/{slug}', [CatalogController::class, 'shop'])->name('shop.show');
+Route::get('/', function () {
+    return view('static.home');
+})->name('home.static');
 
 Route::get('/snk', [StaticPageController::class, 'snk'])->name('snk');
 Route::get('/kontak', [StaticPageController::class, 'kontak'])->name('kontak');
@@ -58,6 +56,7 @@ Route::get('/faq', [StaticPageController::class, 'faq'])->name('faq');
 Route::get('/kebijakan-privasi', [StaticPageController::class, 'kebijakanPrivasi'])->name('kebijakan-privasi');
 Route::get('/disclaimer', [StaticPageController::class, 'disclaimer'])->name('disclaimer');
 Route::get('/tentang-kami', [StaticPageController::class, 'tentangKami'])->name('tentang-kami');
+
 /*
 |--------------------------------------------------------------------------
 | AUTH RESELLER
@@ -103,36 +102,6 @@ Route::post('/staff-only', [AuthController::class, 'loginAdmin'])->name('login.a
 */
 Route::middleware([AdminMiddleware::class])->group(function () {
     Route::prefix('staff-only')->group(function () {
-        Route::get('/generate-sitemap', function () {
-            $sitemap = Sitemap::create()
-                ->add(Url::create('/')->setPriority(1.0)) // Home
-                ->add(Url::create('/toko')->setPriority(0.8)); // Katalog umum
-
-            // Product detail
-            $products = Product::all();
-            foreach ($products as $product) {
-                $sitemap->add(
-                    Url::create('/product/' . $product->slug)
-                        ->setPriority(0.9)
-                        ->setLastModificationDate($product->updated_at),
-                );
-            }
-
-            // Toko/reseller
-            $shops = Shop::all();
-            foreach ($shops as $shop) {
-                $sitemap->add(
-                    Url::create('/shop/' . $shop->slug)
-                        ->setPriority(0.7)
-                        ->setLastModificationDate($shop->updated_at),
-                );
-            }
-
-            $sitemap->writeToFile(public_path('sitemap.xml'));
-
-            return 'Sitemap berhasil dibuat!';
-        });
-
         Route::get('/dashboard', [DashboardController::class, 'adminDashboard'])->name('dashboard.admin');
         Route::resource('categories', CategoryController::class);
 
@@ -145,7 +114,7 @@ Route::middleware([AdminMiddleware::class])->group(function () {
         Route::delete('shops/{product}/force', [ProductController::class, 'forceDelete'])->name('products.forceDelete');
 
         Route::get('/orders', [OrderController::class, 'currentOrders'])->name('orders.current');
-        Route::get('/resi/download/{resi}',  [OrderController::class, 'downloadResi'])->name('orders.downloadResi');
+        Route::get('/resi/download/{resi}', [OrderController::class, 'downloadResi'])->name('orders.downloadResi');
         Route::post('/orders/update-status', [OrderController::class, 'changeStatus'])->name('order.update-status');
         Route::get('/orders/history', [OrderController::class, 'history_orders'])->name('orders.history');
 
@@ -187,6 +156,12 @@ Route::middleware([AdminMiddleware::class])->group(function () {
     });
 });
 Route::middleware([ResellerMiddleware::class])->group(function () {
+    Route::get('/home', [CatalogController::class, 'ShowHome'])->name('home');
+    Route::get('/product/{slug}', [CatalogController::class, 'showProduct'])->name('product.show');
+    Route::get('/search', [CatalogController::class, 'search'])->name('search');
+    Route::get('/kategori/{slug}', [CatalogController::class, 'kategori'])->name('category.show');
+    Route::get('/shop/{slug}', [CatalogController::class, 'shop'])->name('shop.show');
+
     Route::get('/feedback', [WebRatingController::class, 'index'])->name('feedback');
     Route::post('/web-rating', [WebRatingController::class, 'store'])->name('web-rating.store');
 

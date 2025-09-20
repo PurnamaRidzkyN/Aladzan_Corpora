@@ -84,7 +84,7 @@
 
         <!-- Kembali -->
         <div class="mt-4 text-center">
-            <a href="{{ route('home') }}" class="text-sm text-gray-500 hover:text-blue-600">&larr; Kembali</a>
+            <a href="/" class="text-sm text-gray-500 hover:text-blue-600">&larr; Kembali</a>
         </div>
     </div>
 

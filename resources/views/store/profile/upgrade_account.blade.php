@@ -22,44 +22,61 @@
             <p id="pesanDiskon" class="mt-2 text-sm hidden"></p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            @foreach($plans as $plan)
-                @php
-                    $isCurrent = $user->plan && $user->plan->id === $plan->id;
-                @endphp
-                <form method="POST" action="{{ route('upgrade.account.payment') }}" class="{{ $isCurrent ? 'bg-gray-100 opacity-70' : 'bg-white hover:shadow-lg hover:scale-[1.02] cursor-pointer' }} border rounded-xl p-4 md:p-6 transition">
-                    @csrf
-                    <input type="hidden" name="plan_id" value="{{ $plan->id }}">
-                    <input type="hidden" name="discount_code" id="discount_code_{{ $plan->id }}" value="">
-                    <input type="hidden" name="final_price" id="final_price_{{ $plan->id }}" value="{{ $plan->price }}">
+        <div class="grid md:grid-cols-2 gap-8 items-start">
+    @foreach($plans as $plan)
+        @php
+            $isCurrent = $user->plan && $user->plan->id === $plan->id;
+        @endphp
+        <form method="POST" action="{{ route('upgrade.account.payment') }}" 
+              class="relative {{ $isCurrent ? 'bg-gray-100 opacity-70' : 'bg-white hover:shadow-xl hover:scale-[1.02] cursor-pointer' }} border rounded-xl p-8 transition">
+            @csrf
+            <input type="hidden" name="plan_id" value="{{ $plan->id }}">
+            <input type="hidden" name="discount_code" id="discount_code_{{ $plan->id }}" value="">
+            <input type="hidden" name="final_price" id="final_price_{{ $plan->id }}" value="{{ $plan->price }}">
 
-                    <div class="flex justify-between items-center mb-2">
-                        <h2 class="text-lg md:text-xl font-bold {{ $isCurrent ? 'text-gray-500' : 'text-blue-700' }}">
-                            {{ $plan->name }} {{ $isCurrent ? '(Aktif)' : '' }}
-                        </h2>
-                        <div class="text-right">
-                            <span id="harga{{ $plan->id }}" class="text-sm md:text-base {{ $isCurrent ? 'bg-gray-300 text-gray-600' : 'bg-blue-600 text-white' }} px-3 py-1 rounded-full">
-                                Rp {{ number_format($plan->price,0,',','.') }}
-                            </span>
-                            <span id="diskonInfo{{ $plan->id }}" class="block text-green-600 text-xs font-medium mt-1 hidden"></span>
-                        </div>
-                    </div>
+            {{-- Label Populer --}}
+            @if($plan->is_popular)
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
+                    Paling Populer
+                </div>
+            @endif
 
-                    <ul class="space-y-2 text-gray-600 text-sm mb-4">
-                        @foreach(explode("\n", $plan->description ?? '') as $line)
-                            <li>🚀 {{ $line }}</li>
-                        @endforeach
-                    </ul>
+            {{-- Judul Paket --}}
+            <h3 class="text-2xl font-bold mb-2">{{ $plan->name }} {{ $isCurrent ? '(Aktif)' : '' }}</h3>
 
-                    @unless($isCurrent)
-                        <button type="submit"
-                            class="w-full py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
-                            Upgrade ke {{ $plan->name }}
-                        </button>
-                    @endunless
-                </form>
-            @endforeach
-        </div>
+            {{-- Harga + Info Diskon --}}
+            <div class="mb-6">
+                <p id="harga{{ $plan->id }}" class="text-4xl font-bold">
+                    Rp {{ number_format($plan->price,0,',','.') }}
+                </p>
+                <p id="diskonInfo{{ $plan->id }}" class="text-green-600 text-sm font-medium mt-1 hidden"></p>
+            </div>
+
+            {{-- Deskripsi Fitur --}}
+            <ul class="space-y-3 text-left mb-8 text-gray-700">
+                @foreach(explode("\n", $plan->description ?? '') as $line)
+                    <li class="flex items-center">
+                        @if(Str::contains($line, 'Tidak'))
+                            <i class="fas fa-times-circle text-gray-400 mr-3"></i>
+                        @else
+                            <i class="fas fa-check-circle text-green-500 mr-3"></i>
+                        @endif
+                        {{ $line }}
+                    </li>
+                @endforeach
+            </ul>
+
+            {{-- Tombol --}}
+            @unless($isCurrent)
+                <button type="submit" 
+                        class="w-full py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
+                    Pilih Paket {{ $plan->name }}
+                </button>
+            @endunless
+        </form>
+    @endforeach
+</div>
+
 
         <p class="text-center text-gray-500 text-xs mt-6">
             Anda dapat mengubah paket kapan saja di pengaturan akun.

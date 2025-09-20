@@ -17,18 +17,22 @@ class OrderController extends Controller
      */
     public function currentOrders()
     {
-        $orders = Order::with('orderItems', 'reseller', 'resi','resi.resiSource')
+        $orders = Order::with('orderItems', 'reseller', 'resi', 'resi.resiSource')
             ->whereNotIn('status', [3, 4])
             ->get();
         return view('admin.order.current_orders', compact('orders'));
     }
     public function downloadResi(Resi $resi)
     {
-        $response = Http::get($resi->file_path); // ambil file dari Cloudinary
+        try {
+            $response = Http::get($resi->file_path); // ambil file dari Cloudinary
 
-        return response($response->body(), 200)
-            ->header('Content-Type', $response->header('Content-Type'))
-            ->header('Content-Disposition', 'attachment; filename="' . $resi->file_name . '"');
+            return response($response->body(), 200)
+                ->header('Content-Type', $response->header('Content-Type'))
+                ->header('Content-Disposition', 'attachment; filename="' . $resi->file_name . '"');
+         } catch (\Exception $e) {
+            return back()->with('error', 'Gagal mengunduh resi pengiriman. Silakan coba lagi.');
+        }
     }
 
     public function changeStatus(Request $request)

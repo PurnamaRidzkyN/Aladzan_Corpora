@@ -18,6 +18,14 @@ class ResellerMiddleware
     public function handle($request, Closure $next)
     {
         if (Auth::guard('reseller')->check()) {
+            $user = Auth::guard('reseller')->user();
+
+            if ($user && is_null($user->plan_id)) {
+                if (!in_array($request->route()->getName(), ['upgrade.account', 'upgrade.account.payment', 'upgrade.account.payment.store', 'check.discount'])) {
+                    return redirect()->route('upgrade.account')->with('error', 'Kamu belum memiliki plan. Silahkan pilih plan terlebih dahulu atau tunggu admin konfirmasi.');
+                }
+            }
+
             return $next($request);
         }
 

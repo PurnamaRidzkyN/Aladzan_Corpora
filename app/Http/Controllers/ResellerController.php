@@ -230,7 +230,7 @@ class ResellerController extends Controller
         ]);
         $plan = Plan::findOrFail($validated['plan_id']);
         $reseller = auth()->user();
-        NotificationHelper::notifyAdmins('Pesanan Baru', "Reseller {{ $reseller->name }} telah mengajukan upgrade plan ke {{ $plan->name }}.", route('orders.current'));
+        NotificationHelper::notifyAdmins('Pesanan Baru', "Reseller  $reseller->name  telah mengajukan upgrade plan ke  $plan->name .", route('admin.orders.pending'));
         return redirect()->route('profile')->with('success', 'Bukti pembayaran berhasil dikirim!');
     }
 

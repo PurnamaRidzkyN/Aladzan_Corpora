@@ -26,15 +26,15 @@ class DatabaseSeeder extends Seeder
          
         Plan::create([
             'name' => 'Standard',
-            'description' => 'Dapat belanja saja',
-            'price' => 0, 
+            'description' => 'Akses Katalog Mitra\nTidak ada Materi Promosi\nTidak ada Grup Reseller',
+            'price' => 165000, 
             'currency' => 'IDR',
             'duration_days' => 0,
         ]);
         Plan::create([
             'name' => 'Pro',
-            'description' => 'Dapat mempunyai link komunitas, belanja, dan video pembelajaran cara berjualan',
-            'price' => 150000, 
+            'description' => 'Akses Katalog Mitra\nMateri Promosi Lengkap\nGrup Reseller Premium',
+            'price' => 399000, 
             'currency' => 'IDR',
             'duration_days' => 00, 
         ]);

@@ -39,7 +39,7 @@
     <nav class="bg-white shadow-sm sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
             {{-- Logo --}}
-            <a href="/" class="flex-shrink-0">
+            <a href="/home" class="flex-shrink-0">
                 <img src="{{ asset('storage/logo2.png') }}" alt="ALADZAN CORPORA Logo"
                     class="w-24 sm:w-32 md:w-48 max-w-full h-auto object-contain">
             </a>
@@ -169,7 +169,7 @@
         <div class="flex justify-around items-center h-16 text-sm text-gray-700">
 
             {{-- Home --}}
-            <a href="/"
+            <a href="/home"
                 class="relative flex flex-col items-center justify-center
             {{ request()->is('/') ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
                 <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
@@ -220,7 +220,7 @@
             @if (Auth::guard('admin')->check())
                 <a href="{{ route('dashboard.admin') }}"
                     class="relative flex flex-col items-center justify-center
-                {{ request()->is( route('dashboard.admin') ) ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
+                {{ request()->is(route('dashboard.admin')) ? 'text-blue-600 font-semibold' : 'hover:text-blue-600' }}">
                     <svg class="w-5 h-5 mb-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -251,8 +251,6 @@
 
         </div>
     </div>
-
-
 
     {{-- Konten halaman --}}
     <div class=" p-10">
@@ -319,56 +317,7 @@
 
         @yield('content')
     </div>
-    <footer class="bg-base-200 text-base-content mt-10 ">
-        <div class="max-w-7xl mx-auto px-6 py-10 grid grid-cols-1 md:grid-cols-4 gap-8">
-            <!-- Brand -->
-            <div>
-                <h2 class="text-lg font-bold text-primary mb-2">ResellerHub</h2>
-                <p class="text-sm text-gray-500">
-                    Platform terpercaya untuk reseller mencari produk terbaik dengan harga grosir. Mudah, cepat, dan
-                    aman.
-                </p>
-            </div>
-
-            <!-- Informasi -->
-            <div>
-                <h4 class="footer-title">Informasi</h4>
-                <ul class="space-y-1 text-sm">
-                    <li><a href="/snk" class="link link-hover">Syarat & Ketentuan</a></li>
-                    <li><a href="/kebijakan-privasi" class="link link-hover">Kebijakan Privasi</a></li>
-                    <li><a href="/disclaimer" class="link link-hover">Disclaimer</a></li>
-                </ul>
-            </div>
-
-            <!-- Tentang -->
-            <div>
-                <h4 class="footer-title">Tentang</h4>
-                <ul class="space-y-1 text-sm">
-                    <li><a href="/tentang-kami" class="link link-hover">Tentang Kami</a></li>
-                    <li><a href="/faq" class="link link-hover">FAQ</a></li>
-                    <li><a href="/kontak" class="link link-hover">Kontak Kami</a></li>
-                </ul>
-            </div>
-
-            <!-- Kontak -->
-            <div>
-                <h4 class="footer-title">Customer Service</h4>
-                <a href="/feedback" class="link link-hover text-sm">Kritik dan Saran</a>
-                <p class="text-sm">Email: <a href="mailto:y.aladzan.92@gmail.com"
-                        class="link link-hover text-blue-600">y.aladzan.92@gmail.com</a></p>
-                <div class="mt-3 flex space-x-3 text-xl">
-                    <a href="#"><i class="fab fa-facebook-f hover:text-blue-600"></i></a>
-                    <a href="#"><i class="fab fa-instagram hover:text-pink-500"></i></a>
-                    <a href="#"><i class="fab fa-whatsapp hover:text-green-500"></i></a>
-                </div>
-            </div>
-        </div>
-
-        <div class="border-t border-gray-300 text-center py-4 text-sm text-gray-500">
-            &copy; {{ date('Y') }} Y-Aladzan. All rights reserved.
-        </div>
-    </footer>
-
+    @include('layouts.footer')
 
 </body>
 {{-- <script>
