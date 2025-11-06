@@ -396,14 +396,15 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        if (Auth::guard('reseller')->check()) {
-            Auth::guard('reseller')->logout();
-        } elseif (Auth::guard('admin')->check()) {
-            Auth::guard('admin')->logout();
+        foreach (['reseller', 'admin'] as $guard) {
+            if (Auth::guard($guard)->check()) {
+                Auth::guard($guard)->logout();
+            }
         }
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
         return redirect('/');
     }
 }
