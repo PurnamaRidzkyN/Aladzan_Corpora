@@ -1,11 +1,12 @@
 @extends('layouts.app')
 
 @section('title', 'Produk Katalog')
-@section('meta_description', 'Hasil pencarian produk ALADZAN untuk reseller. Temukan berbagai barang berkualitas untuk
+@section('meta_description',
+    'Hasil pencarian produk ALADZAN untuk reseller. Temukan berbagai barang berkualitas untuk
     dijual kembali.')
 
 @section('head_extra')
-<meta name="robots" content="noindex, follow">
+    <meta name="robots" content="noindex, follow">
 @endsection
 
 @section('content')
@@ -103,7 +104,7 @@
                         <p class="text-xs text-gray-500 mb-1">oleh <span
                                 class="font-semibold">{{ $product->shop->name }}</span></p>
                         <p class="text-blue-600 font-bold text-sm mb-3">Rp
-                            {{ number_format($product->variants->first()->price, 0, ',', '.') }}</p>
+                            {{ number_format($product->variants->first()?->price ?? 0, 0, ',', '.') }}
                     </a>
 
                     <div class="px-4 pb-4">

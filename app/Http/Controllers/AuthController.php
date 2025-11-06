@@ -188,9 +188,9 @@ class AuthController extends Controller
         if ($user) {
             Auth::login($user);
             $redirectTo = session()->pull('reseller_redirect_back', '/home');
-            
+
             if ($redirectTo == url('/')) {
-                return redirect("/home");
+                return redirect('/home');
             }
             return redirect($redirectTo);
         } else {
@@ -342,6 +342,9 @@ class AuthController extends Controller
 
         if (!$data) {
             return redirect()->route('register.form')->withErrors('Data pendaftaran tidak ditemukan atau link sudah kedaluwarsa.');
+        }
+        if ($data['email'] !== $email) {
+            abort(401, 'Email tidak sesuai dengan link verifikasi.');
         }
 
         // Simpan user baru
