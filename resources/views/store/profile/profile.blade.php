@@ -113,6 +113,7 @@
                         <input type="file" name="pfp" accept="image/*"
                             class="block w-full text-sm text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200"
                             onchange="previewImage(event)">
+                            <p id="pfp-error" class="text-red-500 text-sm mt-1"></p>
                     </div>
 
                     <!-- Nama -->
@@ -189,3 +190,30 @@
         reader.readAsDataURL(input.files[0]);
     }
 </script>
+<script>
+function previewImage(event) {
+    const file = event.target.files[0];
+    const errorEl = document.getElementById('pfp-error');
+
+    // reset pesan error dulu
+    errorEl.textContent = '';
+
+    if (!file) return;
+
+    // Cek ukuran file 2 MB
+    if (file.size > 2 * 1024 * 1024) {
+        errorEl.textContent = 'File terlalu besar! Maksimal 2 MB.';
+        event.target.value = ''; // reset input
+        document.getElementById('preview').src = "{{ cloudinary_url(auth()->user()->pfp_path) }}"; // reset preview
+        return;
+    }
+
+    // Preview image
+    const reader = new FileReader();
+    reader.onload = function(){
+        document.getElementById('preview').src = reader.result;
+    };
+    reader.readAsDataURL(file);
+}
+</script>
+
