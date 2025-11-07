@@ -36,13 +36,28 @@
                 <!-- Judul -->
                 <div class="flex items-center justify-between mb-4">
                     <h2 class="text-lg font-bold text-gray-800">🏆 Toko Terbaik</h2>
-                    <span class="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
-                        {{ number_format($bestShop->avg_rating, 2) }} ★
-                    </span>
+                    @if ($bestShop)
+                        <span class="px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full">
+                            {{ number_format($bestShop->avg_rating, 2) }} ★
+                        </span>
+                    @else
+                        <span class="px-3 py-1 bg-gray-100 text-gray-500 text-sm rounded-full">
+                            Belum ada data
+                        </span>
+                    @endif
                 </div>
 
+
                 <!-- Nama toko -->
-                <p class="text-xl font-semibold text-green-600 mb-6">{{ $bestShop->name }}</p>
+                @if ($bestShop)
+                    <p class="text-xl font-semibold text-green-600 mb-6">
+                        {{ $bestShop->name }}
+                    </p>
+                @else
+                    <p class="text-xl font-semibold text-gray-500 mb-6">
+                        Belum ada toko terbaik saat ini
+                    </p>
+                @endif
 
                 <!-- Pie Chart -->
                 <div class="flex justify-center items-center flex-1">
@@ -117,13 +132,17 @@
                         <span class="text-2xl">⭐</span> Rating Tertinggi
                     </h3>
                     <ul class="space-y-3">
-                        @foreach ($bestProducts as $product)
+                        @forelse ($bestProducts as $product)
                             <li
                                 class="flex justify-between items-center p-3 bg-white rounded-lg shadow-sm hover:bg-yellow-50">
                                 <span class="font-medium text-gray-800">{{ $product->name }}</span>
                                 <span class="text-yellow-600 font-bold">{{ number_format($product->avg_rating, 1) }}</span>
                             </li>
-                        @endforeach
+                        @empty
+                            <li class="p-3 bg-gray-50 text-gray-500 text-center rounded-lg">
+                                Tidak ada produk terbaik untuk ditampilkan.
+                            </li>
+                        @endforelse
                     </ul>
                 </div>
 
