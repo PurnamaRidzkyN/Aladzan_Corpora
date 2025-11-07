@@ -134,10 +134,12 @@ class PaymentController extends Controller
                     'total_shipping' => 'required|numeric',
                     'address_id' => 'required|exists:addresses,id',
                     'note' => 'nullable|string',
-                    'has_resi' => 'required|string',
-                    'resi_number' => 'required_if:has_resi,1|string|max:255',
-                    'resi_file' => 'required_if:has_resi,1|file|mimes:pdf,doc,docx,txt,jpg,jpeg,png,|max:1048',
-                    'resi_source_id' => 'required_if:has_resi,1|exists:resi_sources,id',
+                    'has_resi' => 'required|in:0,1',
+
+                    // kalau has_resi = 0, field di-skip; kalau has_resi = 1, wajib diisi
+                    'resi_number' => 'exclude_if:has_resi,0|nullable|required_if:has_resi,1|string|max:255',
+                    'resi_file' => 'exclude_if:has_resi,0|nullable|required_if:has_resi,1|file|mimes:pdf,doc,docx,txt,jpg,jpeg,png|max:1048',
+                    'resi_source_id' => 'exclude_if:has_resi,0|nullable|required_if:has_resi,1|integer|exists:resi_sources,id',
                 ],
                 [
                     'cart_ids.required' => 'Silakan pilih minimal 1 item.',
@@ -190,7 +192,7 @@ class PaymentController extends Controller
             $order = Order::create([
                 'order_code' => 'ORD-' . strtoupper(Str::random(8)),
                 'reseller_id' => auth()->id(),
-                'resi_id' => $resi->id,
+                'resi_id' => optional($resi)->id,
                 'total_price' => $validated['total_price'],
                 'shipping_address' => $shipping_address,
                 'total_shipping' => $validated['total_shipping'],
