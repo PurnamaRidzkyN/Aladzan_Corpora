@@ -368,7 +368,7 @@
 
                                 <!-- Tampilkan yang sedang aktif saat edit -->
                                 <template x-if="$store.productForm.mode === 'edit' && variant.media_id">
-                                    <option :value="variant.media_id">
+                                    <option :value="0">
                                         📌 Saat Ini:
                                         <span
                                             x-text="$store.productForm.mediaOptions.find(m => m.id == variant.media_id)?.name || 'Media tidak ditemukan'">
@@ -380,11 +380,12 @@
                                 <template
                                     x-for="media in $store.productForm.mediaOptions.filter(m => m.type.startsWith('image'))"
                                     :key="media.id">
-                                    <option :value="media.id" x-text="media.name"></option>
+                                    <option :value="media.name" x-text="media.name"></option>
                                 </template>
 
 
                             </select>
+                            
 
 
                             <!-- Tombol Hapus -->

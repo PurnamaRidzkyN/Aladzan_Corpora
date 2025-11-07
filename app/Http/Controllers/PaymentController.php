@@ -136,7 +136,6 @@ class PaymentController extends Controller
                     'note' => 'nullable|string',
                     'has_resi' => 'required|in:0,1',
 
-                    // kalau has_resi = 0, field di-skip; kalau has_resi = 1, wajib diisi
                     'resi_number' => 'exclude_if:has_resi,0|nullable|required_if:has_resi,1|string|max:255',
                     'resi_file' => 'exclude_if:has_resi,0|nullable|required_if:has_resi,1|file|mimes:pdf,doc,docx,txt,jpg,jpeg,png|max:1048',
                     'resi_source_id' => 'exclude_if:has_resi,0|nullable|required_if:has_resi,1|integer|exists:resi_sources,id',

@@ -159,7 +159,6 @@ class ProductController extends Controller
         }
 
         // --- UPLOAD MEDIA BARU ---
-        $mediaMap = [];
         if ($request->hasFile('media')) {
             $folderName = 'P/S' . $validated['shop_id'] . '/P' . $product->id;
 
@@ -178,8 +177,6 @@ class ProductController extends Controller
                     'file_type' => $uploaded['resource_type'],
                     'original_name' => $file->getClientOriginalName(),
                 ]);
-
-                $mediaMap[$file->getClientOriginalName()] = $media->id;
             }
         }
 
@@ -192,17 +189,24 @@ class ProductController extends Controller
                 }
             }
         }
-
         // --- UPDATE VARIAN ---
         if ($request->has('variants')) {
             foreach ($request->variants as $variantData) {
                 $variantId = $variantData['variant_id'] ?? null;
+                if (!empty($variantData['media_id']) && $variantData['media_id'] != 0) {
+                    $media_id = ProductMedia::where('original_name', $variantData['media_id'])->first()->id;
 
-                $data = [
-                    'name' => $variantData['name'],
-                    'price' => $variantData['price'],
-                    'product_media_id' => isset($variantData['media_id']) ? data_get($mediaMap, $variantData['media_id'], null) : null,
-                ];
+                    $data = [
+                        'name' => $variantData['name'],
+                        'price' => $variantData['price'],
+                        'product_media_id' => $media_id,
+                    ];
+                } else {
+                    $data = [
+                        'name' => $variantData['name'],
+                        'price' => $variantData['price'],
+                    ];
+                }
 
                 if ($variantId) {
                     // Update variant existing
