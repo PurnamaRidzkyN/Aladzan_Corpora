@@ -16,7 +16,7 @@
 
                     <div class="bg-white border rounded-xl p-4 shadow-sm hover:shadow-lg transition relative">
                         <a href="{{ route('product.show', $product->slug) }}">
-                              <img src="{{ cloudinary_url($product->media->first()?->file_path ?? 'productDefault_mpgglw') }}"
+                              <img src="{{ cloudinary_url($product->media->first()?->file_path ?? 'productDefault_nawcx4') }}"
                             alt="{{ $product->name }}" class="w-full sm:h-40  object-cover rounded-lg mb-3" />
                         </a>
 

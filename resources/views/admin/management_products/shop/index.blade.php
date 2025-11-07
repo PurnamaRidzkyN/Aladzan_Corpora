@@ -170,7 +170,7 @@
             <form action="{{ route('shops.store') }}" method="POST" class="space-y-4" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-4 text-center">
-                    <img id="preview" src="{{ cloudinary_url('productDefault_mpgglw') }}"
+                    <img id="preview" src="{{ cloudinary_url('productDefault_nawcx4') }}"
                         class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-blue-300 mb-2"
                         alt="Foto Profil">
                     <input type="file" name="img_path" accept="image/*"

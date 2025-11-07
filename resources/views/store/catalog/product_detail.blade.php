@@ -15,7 +15,7 @@
                         @forelse ($product->media as $item)
                             @php
                                 $isImage = $item->file_type === 'image';
-                                $filePath = $item->file_path ?: 'productDefault_mpgglw';
+                                $filePath = $item->file_path ?: 'productDefault_nawcx4';
                                 $src = cloudinary_url(
                                     $filePath,
                                     $isImage ? 'image' : 'video',
@@ -38,7 +38,7 @@
                         @empty
                             {{-- Jika tidak ada media, tampilkan gambar default --}}
                             <div class="swiper-slide">
-                                <img src="{{ cloudinary_url('productDefault_mpgglw', 'image', 'w_800,h_800,c_fit,q_auto,f_auto') }}"
+                                <img src="{{ cloudinary_url('productDefault_nawcx4', 'image', 'w_800,h_800,c_fit,q_auto,f_auto') }}"
                                     alt="No Product" class="w-full h-[400px] object-contain cursor-pointer bg-gray-100">
                             </div>
                         @endforelse
@@ -238,7 +238,7 @@
                     class="flex items-center gap-3 px-3 py-2 rounded-lg border border-sky-200 bg-white shadow-sm hover:shadow-md transition">
 
                     <!-- Gambar toko -->
-                    <img src="{{ cloudinary_url($product->shop->img_path ?? 'productDefault_mpgglw') }}" alt="Logo Toko"
+                    <img src="{{ cloudinary_url($product->shop->img_path ?? 'productDefault_nawcx4') }}" alt="Logo Toko"
                         class="w-10 h-10 rounded-full object-cover border border-blue-200">
 
                     <!-- Info toko -->
@@ -535,7 +535,7 @@
                     <div
                         class="flex-none w-56 bg-white border border-blue-100 rounded-xl p-3 shadow-sm hover:shadow-md hover:bg-blue-50 transition">
                         <a href="{{ route('product.show', $relatedProduct->slug) }}">
-                            <img src="{{ cloudinary_url($relatedProduct->media->first()?->file_path ?? 'productDefault_mpgglw') }}"
+                            <img src="{{ cloudinary_url($relatedProduct->media->first()?->file_path ?? 'productDefault_nawcx4') }}"
                                 alt="{{ $relatedProduct->name }}" class="w-full h-32 object-cover rounded-lg mb-2" />
                         </a>
 

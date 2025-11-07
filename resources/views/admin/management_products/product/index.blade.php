@@ -16,7 +16,7 @@
             class="card bg-white shadow-md rounded-xl border border-soft p-6 flex flex-col lg:flex-row items-start lg:items-center gap-6">
             <!-- Gambar di kiri -->
             <div class="flex-shrink-0">
-                <img src="{{ cloudinary_url($shop->img_path ?? 'productDefault_mpgglw') }}"
+                <img src="{{ cloudinary_url($shop->img_path ?? 'productDefault_nawcx4') }}"
                     class="w-24 h-24 rounded-full object-cover border-2 border-blue-300" alt="Foto toko">
             </div>
 
@@ -788,7 +788,7 @@
                 @csrf
                 @method('PUT')
                 <div class="mb-4 text-center">
-                    <img id="preview" src="{{ cloudinary_url($shop->img_path ?? 'productDefault_mpgglw') }}"
+                    <img id="preview" src="{{ cloudinary_url($shop->img_path ?? 'productDefault_nawcx4') }}"
                         class="w-24 h-24 rounded-full mx-auto object-cover border-2 border-blue-300 mb-2" alt="Foto toko">
                     <input type="file" name="img_path" accept="image/*"
                         class="block w-full text-sm text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200"

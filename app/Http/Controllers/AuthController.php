@@ -353,7 +353,7 @@ class AuthController extends Controller
             'email' => $data['email'],
             'password' => $data['password'],
             'phone' => $data['phone'],
-            'pfp_path' => 'default_wxli5k.jpg',
+            'pfp_path' => 'default_skfwvx.jpg',
         ]);
 
         Auth::login($user);

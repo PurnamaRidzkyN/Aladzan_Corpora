@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Contoh Reseller',
             'email' => 'himadatsuki@gmail.com',
             'password' => bcrypt('password123'),
-            'pfp_path' => 'default_wxli5k.jpg',
+            'pfp_path' => 'default_skfwvx.jpg',
             'phone' => '081234567890',
             'email_verified_at' => now(),
             'plan_id' => 1,

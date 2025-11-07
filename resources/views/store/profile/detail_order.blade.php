@@ -95,7 +95,7 @@
                         <div class="flex flex-col md:flex-row items-start md:items-center gap-4 p-4">
                             <!-- Gambar -->
                             <div class="w-28 h-28 flex-shrink-0 overflow-hidden rounded-xl border">
-                                <img src="{{ cloudinary_url($item->variant->media->file_path ?? 'productDefault_mpgglw', 'image', 'w_400,h_400,c_fill') }}"
+                                <img src="{{ cloudinary_url($item->variant->media->file_path ?? 'productDefault_nawcx4', 'image', 'w_400,h_400,c_fill') }}"
                                     alt="{{ $item->variant->name }}" class="w-full h-full object-cover">
                             </div>
                             <!-- Detail -->
