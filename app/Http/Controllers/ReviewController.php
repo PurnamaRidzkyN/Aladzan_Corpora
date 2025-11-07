@@ -29,7 +29,9 @@ class ReviewController extends Controller
             ->whereNotNull('comment')
             ->latest()
             ->get();
-
+        if ($ratings->isEmpty()) {
+            return redirect()->back()->with('error', 'Belum ada ulasan untuk produk ini');
+        }
         $averageRating = round($ratings->avg('rating'), 1);
         $totalReviews = $ratings->count();
         return view('admin.management_products.review.index', compact('ratings', 'averageRating', 'totalReviews', 'product'));
