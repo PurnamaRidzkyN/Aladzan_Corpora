@@ -155,19 +155,19 @@
                                         <div class="flex-shrink-0 w-32 h-32 relative">
                                             <!-- IMAGE -->
                                             <template x-if="item.file_type.startsWith('image')">
-                                                <img :src="'https://res.cloudinary.com/dpujlyn9x/image/upload/' + item.file_path"
+                                                <img :src="'https://res.cloudinary.com/dsperagoc/image/upload/' + item.file_path"
                                                     class="w-full h-full object-cover rounded-xl border cursor-pointer"
                                                     alt="Gambar Produk"
-                                                    @click="preview = 'https://res.cloudinary.com/dpujlyn9x/image/upload/' + item.file_path ; type = 'image'">
+                                                    @click="preview = 'https://res.cloudinary.com/dsperagoc/image/upload/' + item.file_path ; type = 'image'">
                                             </template>
 
                                             <!-- VIDEO -->
                                             <template x-if="item.file_type.startsWith('video')">
                                                 <div class="relative w-full h-full cursor-pointer"
-                                                    @click="preview = 'https://res.cloudinary.com/dpujlyn9x/video/upload/' + item.file_path; type = 'video'">
+                                                    @click="preview = 'https://res.cloudinary.com/dsperagoc/video/upload/' + item.file_path; type = 'video'">
 
                                                     <!-- Thumbnail dari frame pertama video -->
-                                                    <img :src="'https://res.cloudinary.com/dpujlyn9x/video/upload/so_0/' + item
+                                                    <img :src="'https://res.cloudinary.com/dsperagoc/video/upload/so_0/' + item
                                                         .file_path + '.jpg'"
                                                         alt="Thumbnail Video"
                                                         class="w-full h-full object-cover rounded-xl border" />
@@ -563,10 +563,10 @@
                 li.className = 'relative border rounded-md shadow overflow-hidden group';
 
                 const content = isVideo ?
-                    `<img src="https://res.cloudinary.com/dpujlyn9x/video/upload/so_0/${item.file_path}.jpg" 
+                    `<img src="https://res.cloudinary.com/dsperagoc/video/upload/so_0/${item.file_path}.jpg" 
              alt="Thumbnail Video" 
              class="w-full h-24 object-cover" />` :
-                    `<img src="https://res.cloudinary.com/dpujlyn9x/image/upload/${item.file_path}"
+                    `<img src="https://res.cloudinary.com/dsperagoc/image/upload/${item.file_path}"
             class="w-full h-24 object-cover" alt="${item.original_name}">`;
 
 
